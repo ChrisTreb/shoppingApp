@@ -10,8 +10,8 @@ import SettingsScreen from './screens/SettingsScreen';
 
 //Screen names
 const homeName = "Ma liste de courses";
-const detailsName = "Générer liste";
-const settingsName = "Settings";
+const detailsName = "Générer ma liste";
+const settingsName = "Gérer mes produits";
 
 const Tab = createBottomTabNavigator();
 

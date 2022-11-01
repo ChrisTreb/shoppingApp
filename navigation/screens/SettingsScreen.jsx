@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert } from 'react-native';
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert, Modal, Pressable } from 'react-native';
+import ProductSearch from '../../input/ProductSearch';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as SQLite from "expo-sqlite";
 
 function openDatabase() {
@@ -54,9 +56,10 @@ db.transaction(
     }
 );
 
-export default function SettingsScreen() {
+export default function SettingsScreen({ navigation }) {
 
     var [products, setProducts] = useState("");
+    const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
         getData();
@@ -156,6 +159,49 @@ export default function SettingsScreen() {
             marginLeft: 10,
             marginRight: 15,
             borderRadius: 20
+        },
+        buttonContainer: {
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#1E90FF',
+            width: 70,
+            height: 70,
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            marginBottom: 20,
+            borderRadius: 35
+        },
+        button: {
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 70
+        },
+        ionicon: {
+            color: '#fff',
+            fontSize: 40
+        },
+        modalView: {
+            margin: 20,
+            backgroundColor: "white",
+            borderRadius: 20,
+            padding: 35,
+            alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: {
+                width: 0,
+                height: 2
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 4,
+            elevation: 5
+        },
+        modalText: {
+            fontSize: 40,
+            marginBottom: 15,
+            textAlign: "center"
         }
     });
 
@@ -167,6 +213,32 @@ export default function SettingsScreen() {
                 renderItem={renderItem}
                 keyExtractor={item => item.id}
             />
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.button} >
+                    <Ionicons style={styles.ionicon} name='add-outline' onPress={() => setModalVisible(true)} />
+                </TouchableOpacity>
+            </View>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    Alert.alert("Modal has been closed.");
+                    setModalVisible(!modalVisible);
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Text style={styles.modalText}>Hello World!</Text>
+                        <Pressable
+                            onPress={() => setModalVisible(!modalVisible)}
+                        >
+                            <Text style={styles.textStyle}>Hide Modal</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
