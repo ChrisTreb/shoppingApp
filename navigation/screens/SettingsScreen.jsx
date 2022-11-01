@@ -101,7 +101,7 @@ export default function SettingsScreen() {
 
             db.transaction(
                 tx => {
-                    tx.executeSql(`INSERT INTO 'products' (name, type, img, lastOrder) VALUES (? , ? , ?)`, [name.trim(), type.trim(), image.trim(), new Date().toLocaleDateString()], (trans, result) => {
+                    tx.executeSql(`INSERT INTO 'products' (name, type, img, lastOrder) VALUES (? , ? , ? , ?)`, [name.trim(), type.trim(), image.trim(), new Date().toLocaleDateString()], (trans, result) => {
                         console.log("Item inserted in DB !");
                         getData();
                     },
