@@ -117,7 +117,7 @@ export default function SettingsScreen() {
 
     const Item = ({ name }) => (
         <TouchableOpacity onPress={() => deleteAlert(name)} style={styles.item}>
-            <Image style={styles.productImg} source={require('../../img/products/banane.jpg')} />
+            <Image style={styles.productImg} source={require('../../img/products/food.png')} />
             <Text style={styles.title} activeOpacity={0.8}>{name}</Text>
         </TouchableOpacity >
     );

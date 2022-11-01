@@ -47,7 +47,7 @@ Alert.alert(
 
 const Item = ({ title }) => (
   <TouchableOpacity onPress={cartAlert} style={styles.item}>
-    <Image style={styles.productImg} source={require('../img/products/banane.jpg')} />
+    <Image style={styles.productImg} source={require('../img/products/food.png')} />
     <Text style={styles.title} activeOpacity={0.8}>{title}</Text>
   </TouchableOpacity >
 );
