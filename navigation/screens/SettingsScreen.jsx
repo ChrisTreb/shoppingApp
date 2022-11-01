@@ -22,9 +22,10 @@ db.transaction(
 // DEV - Create table
 db.transaction(
     tx => {
-        tx.executeSql(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) NOT NULL, type VARCHAR(50) NOT NULL, img VARCHAR(255), lastOrder TIMESTAMP)`, [], (trans, result) => {
-            //console.log("table created successfully => " + JSON.stringify(result));
-        },
+        tx.executeSql(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) NOT NULL, type VARCHAR(50) NOT NULL, img VARCHAR(255), lastOrder TIMESTAMP)`,
+            [], (trans, result) => {
+                //console.log("table created successfully => " + JSON.stringify(result));
+            },
             error => {
                 console.log("error on creating table products" + error.message);
             });
@@ -34,9 +35,10 @@ db.transaction(
 // DEV - Insert test data
 db.transaction(
     tx => {
-        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Bananes', 'fruits et légumes', new Date().toLocaleDateString()], (trans, result) => {
-            //console.log(trans, JSON.stringify(result))
-        },
+        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`,
+            ['Bananes', 'fruits et légumes', new Date().toISOString().slice(0, 10)], (trans, result) => {
+                //console.log(trans, JSON.stringify(result))
+            },
             error => {
                 console.log("error inserting product into table products " + error.message);
             });
@@ -46,9 +48,10 @@ db.transaction(
 // DEV - Insert test data
 db.transaction(
     tx => {
-        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Beurre', 'Produits frais', new Date().toLocaleDateString()], (trans, result) => {
-            //console.log(trans, JSON.stringify(result))
-        },
+        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`,
+            ['Beurre', 'Produits frais', new Date().toISOString().slice(0, 10)], (trans, result) => {
+                //console.log(trans, JSON.stringify(result))
+            },
             error => {
                 console.log("error inserting product into table products " + error.message);
             });
@@ -101,13 +104,14 @@ export default function SettingsScreen() {
 
             db.transaction(
                 tx => {
-                    tx.executeSql(`INSERT INTO 'products' (name, type, img, lastOrder) VALUES (? , ? , ? , ?)`, [name.trim(), type.trim(), image.trim(), new Date().toLocaleDateString()], (trans, result) => {
-                        console.log("Item inserted in DB !");
-                        getData();
-                    },
-                    error => {
-                        console.log("error inserting product into table products " + error.message);
-                    });
+                    tx.executeSql(`INSERT INTO 'products' (name, type, img, lastOrder) VALUES (? , ? , ? , ?)`,
+                        [name.trim(), type.trim(), image.trim(), new Date().toISOString().slice(0, 10)], (trans, result) => {
+                            console.log("Item inserted in DB !");
+                            getData();
+                        },
+                        error => {
+                            console.log("error inserting product into table products " + error.message);
+                        });
                 }
             );
 
@@ -115,7 +119,7 @@ export default function SettingsScreen() {
             onChangeName("");
             onChangeType("");
             onChangeImg("");
-        } 
+        }
     }
 
     // Delete data from products table
@@ -127,9 +131,9 @@ export default function SettingsScreen() {
                         console.log("Deleting item : " + name);
                         getData();
                     },
-                    error => {
-                        console.log("error deleting product from table products " + error.message);
-                    });
+                        error => {
+                            console.log("error deleting product from table products " + error.message);
+                        });
                 }
             );
         }
@@ -315,7 +319,7 @@ export default function SettingsScreen() {
                             value={nameForm}
                         ></TextInput>
                         <SelectDropdown
-                            data= {types}
+                            data={types}
                             buttonStyle={styles.select}
                             dropdownStyle={styles.dropdown}
                             defaultButtonText="Select product type"
