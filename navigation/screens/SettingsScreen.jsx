@@ -1,16 +1,10 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert, Modal, Pressable } from 'react-native';
-import ProductSearch from '../../input/ProductSearch';
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert, Modal, TextInput } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import * as SQLite from "expo-sqlite";
+import database from '../../database/functions/DatabaseConnect';
 
-function openDatabase() {
-    const db = SQLite.openDatabase("db.db");
-    return db;
-}
-
-const db = openDatabase();
+const db = database;
 
 db.transaction(
     tx => {
@@ -36,7 +30,7 @@ db.transaction(
 
 db.transaction(
     tx => {
-        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES ('Bananes', 'fruits et légumes', datetime('now'))`, [], (trans, result) => {
+        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Bananes', 'fruits et légumes', "datetime('now')"], (trans, result) => {
             console.log(trans, JSON.stringify(result))
         },
             error => {
@@ -47,7 +41,7 @@ db.transaction(
 
 db.transaction(
     tx => {
-        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES ('Beurre', 'Produits frais', datetime('now'))`, [], (trans, result) => {
+        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Beurre', 'Produits frais', "datetime('now')"], (trans, result) => {
             console.log(trans, JSON.stringify(result))
         },
             error => {
@@ -56,10 +50,13 @@ db.transaction(
     }
 );
 
-export default function SettingsScreen({ navigation }) {
+export default function SettingsScreen() {
 
     var [products, setProducts] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
+    const [nameForm, onChangeName] = React.useState("");
+    const [typeForm, onChangeType] = React.useState("");
+    const [imgForm, onChangeImg] = React.useState("");
 
     useEffect(() => {
         getData();
@@ -67,6 +64,7 @@ export default function SettingsScreen({ navigation }) {
     }, []);
 
     const getData = () => {
+
         db.transaction(
             tx => {
                 tx.executeSql(`SELECT * FROM 'products' ORDER BY type DESC`, [], (trans, result) => {
@@ -184,9 +182,10 @@ export default function SettingsScreen({ navigation }) {
             fontSize: 40
         },
         modalView: {
-            margin: 20,
+            marginHorizontal: 20,
+            marginVertical: 50,
             backgroundColor: "white",
-            borderRadius: 20,
+            borderRadius: 10,
             padding: 35,
             alignItems: "center",
             shadowColor: "#000",
@@ -199,10 +198,39 @@ export default function SettingsScreen({ navigation }) {
             elevation: 5
         },
         modalText: {
-            fontSize: 40,
+            fontSize: 25,
+            fontWeight: 'bold',
             marginBottom: 15,
             textAlign: "center"
-        }
+        },
+        modalButtonContainer: {
+            marginVertical: 40,
+            width: '100%',
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: "center",
+            justifyContent: 'space-around'
+        },
+        closeModalButton: {
+            alignItems: 'center',
+            width: 100,
+            height: 50,
+            borderRadius: 5,
+            padding: 15,
+            backgroundColor: '#1E90FF'
+        },
+        textStyle: {
+            color: '#fff',
+            fontSize: 16
+        },
+        input: {
+            width: '100%',
+            height: 50,
+            fontSize: 14,
+            margin: 12,
+            borderWidth: 1,
+            padding: 10
+          },
     });
 
 
@@ -224,18 +252,47 @@ export default function SettingsScreen({ navigation }) {
                 transparent={true}
                 visible={modalVisible}
                 onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
                     setModalVisible(!modalVisible);
                 }}
             >
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
-                        <Text style={styles.modalText}>Hello World!</Text>
-                        <Pressable
-                            onPress={() => setModalVisible(!modalVisible)}
-                        >
-                            <Text style={styles.textStyle}>Hide Modal</Text>
-                        </Pressable>
+
+                        <Text style={styles.modalText}>Ajouter un produit</Text>
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Product name - ex : Fromage râpé"
+                            onChangeText={onChangeName}
+                            value={nameForm}
+                        ></TextInput>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Product type - ex : Produit frais"
+                            onChangeText={onChangeType}
+                            value={typeForm}
+                        ></TextInput>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Product image - ex : https://test/img.png"
+                            onChangeText={onChangeImg}
+                            value={imgForm}
+                        ></TextInput>
+
+                        <View style={styles.modalButtonContainer}>
+                            <TouchableOpacity
+                                style={styles.closeModalButton}
+                                onPress={() => setModalVisible(!modalVisible)}
+                            >
+                                <Text style={styles.textStyle}>Save</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.closeModalButton}
+                                onPress={() => setModalVisible(!modalVisible)}
+                            >
+                                <Text style={styles.textStyle}>Close</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </Modal>
