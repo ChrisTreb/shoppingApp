@@ -7,6 +7,7 @@ import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
 
+// DEV - Drop table
 db.transaction(
     tx => {
         tx.executeSql(`DROP TABLE IF EXISTS products`, [], (trans, result) => {
@@ -18,6 +19,7 @@ db.transaction(
     }
 );
 
+// DEV - Create table
 db.transaction(
     tx => {
         tx.executeSql(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) NOT NULL, type VARCHAR(50) NOT NULL, img VARCHAR(255), lastOrder TIMESTAMP)`, [], (trans, result) => {
@@ -29,6 +31,7 @@ db.transaction(
     }
 );
 
+// DEV - Insert test data
 db.transaction(
     tx => {
         tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Bananes', 'fruits et légumes', new Date().toLocaleDateString()], (trans, result) => {
@@ -40,6 +43,7 @@ db.transaction(
     }
 );
 
+// DEV - Insert test data
 db.transaction(
     tx => {
         tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Beurre', 'Produits frais', new Date().toLocaleDateString()], (trans, result) => {
@@ -59,6 +63,7 @@ export default function SettingsScreen() {
     const [typeForm, onChangeType] = React.useState("");
     const [imgForm, onChangeImg] = React.useState("");
 
+    // Select options array
     const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
 
     useEffect(() => {
@@ -67,6 +72,7 @@ export default function SettingsScreen() {
         insertItem();
     }, []);
 
+    // SELECT from products table
     const getData = () => {
         db.transaction(
             tx => {
@@ -86,6 +92,7 @@ export default function SettingsScreen() {
         );
     }
 
+    // Insert in table products
     const insertItem = (name, type, image) => {
         setModalVisible(false);
 
@@ -111,6 +118,7 @@ export default function SettingsScreen() {
         } 
     }
 
+    // Delete data from products table
     const deleteItem = (name) => {
         if (name != null || name != undefined) {
             db.transaction(
@@ -127,6 +135,7 @@ export default function SettingsScreen() {
         }
     }
 
+    // Alert on product click => Delete item
     const deleteAlert = (name) =>
         Alert.alert(
             "DELETE ITEM",
@@ -158,6 +167,7 @@ export default function SettingsScreen() {
         <Item style={styles.title} name={item.name} itemId={item.id} />
     );
 
+    // Style
     const styles = StyleSheet.create({
         container: {
             width: '90%',
@@ -271,7 +281,7 @@ export default function SettingsScreen() {
         }
     });
 
-
+    // Render view
     return (
         <SafeAreaView style={styles.container}>
             <FlatList
