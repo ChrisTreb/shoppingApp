@@ -71,8 +71,6 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     getData();
-    deleteItem();
-    insertItem();
   }, []);
 
   // SELECT from products table
@@ -99,7 +97,7 @@ export default function SettingsScreen() {
   const insertItem = (name, type, image) => {
     setModalVisible(false);
 
-    if (name != undefined && type != undefined) {
+    if (name != undefined && type != undefined && name != "" && type != "") {
       console.log("Inserting new item in db ! " + name + ", " + type + ", " + image);
 
       db.transaction(
@@ -119,6 +117,21 @@ export default function SettingsScreen() {
       onChangeName("");
       onChangeType("");
       onChangeImg("");
+    } else {
+      // If required inputs are not filled => Display alert
+      Alert.alert(
+        "MISSING INFO",
+        "Product name or product type are required ! Be sure to fill these data.",
+        [
+          {
+            text: "OK, sorry...",
+            onPress: () => console.log("Sorry pressed...")
+          }
+        ],
+        {
+          cancelable: false,
+        }
+      ); 
     }
   }
 
