@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { SafeAreaView, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert } from 'react-native';
 import * as SQLite from "expo-sqlite";
 
 function openDatabase() {
@@ -60,6 +60,7 @@ export default function SettingsScreen() {
 
     useEffect(() => {
         getData();
+        deleteItem();
     }, []);
 
     const getData = () => {
@@ -67,10 +68,13 @@ export default function SettingsScreen() {
             tx => {
                 tx.executeSql(`SELECT * FROM 'products' ORDER BY type DESC`, [], (trans, result) => {
                     var len = result.rows.length;
+                    products = result.rows._array;
 
-                    if(len > 0 ) {
+                    if (len > 0) {
                         console.log('Data = ' + JSON.stringify(result.rows._array));
-                        products = result.rows._array;
+                        setProducts(products);
+                    } else {
+                        console.log('Database empty...');
                         setProducts(products);
                     }
                 });
@@ -78,24 +82,91 @@ export default function SettingsScreen() {
         );
     }
 
-    const Item = ({ title, type }) => (
-        <View>
-          <Text>{title} - {type}</Text>
-        </View>
+    const deleteItem = (name) => {
+        if (name != null) {
+            db.transaction(
+                tx => {
+                    tx.executeSql(`DELETE FROM 'products' WHERE name = '` + name + `'`, [], (trans, result) => {
+                        console.log("Deleting item : " + name);
+                        getData();
+                    });
+                }
+            );
+        }
+    }
+
+    const deleteAlert = (name) =>
+        Alert.alert(
+            "DELETE ITEM",
+            "Do you really want to delete this item ?",
+            [
+                {
+                    text: "No, keep it",
+                    onPress: () => console.log("Keep touched " + name)
+                },
+                {
+                    text: "Yes, delete this",
+                    onPress: () => deleteItem(name),
+                    style: "cancel"
+                }
+            ],
+            {
+                cancelable: true,
+            }
+        );
+
+    const Item = ({ name }) => (
+        <TouchableOpacity onPress={() => deleteAlert(name)} style={styles.item}>
+            <Image style={styles.productImg} source={require('../../img/products/banane.jpg')} />
+            <Text style={styles.title} activeOpacity={0.8}>{name}</Text>
+        </TouchableOpacity >
     );
 
     const renderItem = ({ item }) => (
-        <Item title={item.name} type={item.type} />
-      );
-    
+        <Item style={styles.title} name={item.name} itemId={item.id} />
+    );
+
+    const styles = StyleSheet.create({
+        container: {
+            width: '90%',
+            flex: 1,
+            paddingTop: StatusBar.currentHeight,
+            marginHorizontal: 16
+        },
+        item: {
+            flex: 1,
+            alignItems: "center",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            Height: 50,
+            fontSize: 16,
+            backgroundColor: "#fff",
+            padding: 10,
+            marginVertical: 5,
+            borderRadius: 5
+        },
+        title: {
+            width: "100%",
+            color: "#696969",
+            fontSize: 20
+        },
+        productImg: {
+            maxWidth: 40,
+            maxHeight: 40,
+            marginLeft: 10,
+            marginRight: 15,
+            borderRadius: 20
+        }
+    });
+
 
     return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-             <FlatList
+        <SafeAreaView style={styles.container}>
+            <FlatList
                 data={products}
                 renderItem={renderItem}
                 keyExtractor={item => item.id}
-      />
-        </View>
+            />
+        </SafeAreaView>
     );
 }
