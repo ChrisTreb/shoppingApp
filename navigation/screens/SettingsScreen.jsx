@@ -31,7 +31,7 @@ db.transaction(
 
 db.transaction(
     tx => {
-        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Bananes', 'fruits et légumes', "datetime('now')"], (trans, result) => {
+        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Bananes', 'fruits et légumes', new Date().toLocaleDateString()], (trans, result) => {
             //console.log(trans, JSON.stringify(result))
         },
             error => {
@@ -42,7 +42,7 @@ db.transaction(
 
 db.transaction(
     tx => {
-        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Beurre', 'Produits frais', "datetime('now')"], (trans, result) => {
+        tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Beurre', 'Produits frais', new Date().toLocaleDateString()], (trans, result) => {
             //console.log(trans, JSON.stringify(result))
         },
             error => {
@@ -94,7 +94,7 @@ export default function SettingsScreen() {
 
             db.transaction(
                 tx => {
-                    tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, [name.trim(), type.trim(), image.trim()], (trans, result) => {
+                    tx.executeSql(`INSERT INTO 'products' (name, type, img, lastOrder) VALUES (? , ? , ?)`, [name.trim(), type.trim(), image.trim(), new Date().toLocaleDateString()], (trans, result) => {
                         console.log("Item inserted in DB !");
                         getData();
                     },
