@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert, Modal, TextInput } from 'react-native';
+import SelectDropdown from 'react-native-select-dropdown'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 
@@ -9,7 +10,7 @@ const db = database;
 db.transaction(
     tx => {
         tx.executeSql(`DROP TABLE IF EXISTS products`, [], (trans, result) => {
-            console.log("table dropped successfully => " + JSON.stringify(result));
+            //console.log("table dropped successfully => " + JSON.stringify(result));
         },
             error => {
                 console.log("error on dropping table " + error.message);
@@ -20,7 +21,7 @@ db.transaction(
 db.transaction(
     tx => {
         tx.executeSql(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) NOT NULL, type VARCHAR(50) NOT NULL, img VARCHAR(255), lastOrder TIMESTAMP)`, [], (trans, result) => {
-            console.log("table created successfully => " + JSON.stringify(result));
+            //console.log("table created successfully => " + JSON.stringify(result));
         },
             error => {
                 console.log("error on creating table products" + error.message);
@@ -31,7 +32,7 @@ db.transaction(
 db.transaction(
     tx => {
         tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Bananes', 'fruits et légumes', "datetime('now')"], (trans, result) => {
-            console.log(trans, JSON.stringify(result))
+            //console.log(trans, JSON.stringify(result))
         },
             error => {
                 console.log("error inserting product into table products " + error.message);
@@ -42,7 +43,7 @@ db.transaction(
 db.transaction(
     tx => {
         tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, ['Beurre', 'Produits frais', "datetime('now')"], (trans, result) => {
-            console.log(trans, JSON.stringify(result))
+            //console.log(trans, JSON.stringify(result))
         },
             error => {
                 console.log("error inserting product into table products " + error.message);
@@ -58,13 +59,15 @@ export default function SettingsScreen() {
     const [typeForm, onChangeType] = React.useState("");
     const [imgForm, onChangeImg] = React.useState("");
 
+    const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
+
     useEffect(() => {
         getData();
         deleteItem();
+        insertItem();
     }, []);
 
     const getData = () => {
-
         db.transaction(
             tx => {
                 tx.executeSql(`SELECT * FROM 'products' ORDER BY type DESC`, [], (trans, result) => {
@@ -83,13 +86,41 @@ export default function SettingsScreen() {
         );
     }
 
+    const insertItem = (name, type, image) => {
+        setModalVisible(false);
+
+        if (name != undefined && type != undefined) {
+            console.log("Inserting new item in db ! " + name + ", " + type + ", " + image);
+
+            db.transaction(
+                tx => {
+                    tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`, [name.trim(), type.trim(), image.trim()], (trans, result) => {
+                        console.log("Item inserted in DB !");
+                        getData();
+                    },
+                    error => {
+                        console.log("error inserting product into table products " + error.message);
+                    });
+                }
+            );
+
+            // Reset form after submit
+            onChangeName("");
+            onChangeType("");
+            onChangeImg("");
+        } 
+    }
+
     const deleteItem = (name) => {
-        if (name != null) {
+        if (name != null || name != undefined) {
             db.transaction(
                 tx => {
                     tx.executeSql(`DELETE FROM 'products' WHERE name = '` + name + `'`, [], (trans, result) => {
                         console.log("Deleting item : " + name);
                         getData();
+                    },
+                    error => {
+                        console.log("error deleting product from table products " + error.message);
                     });
                 }
             );
@@ -230,7 +261,14 @@ export default function SettingsScreen() {
             margin: 12,
             borderWidth: 1,
             padding: 10
-          },
+        },
+        select: {
+            width: '100%',
+            margin: 0
+        },
+        dropdown: {
+            height: 'auto'
+        }
     });
 
 
@@ -266,12 +304,14 @@ export default function SettingsScreen() {
                             onChangeText={onChangeName}
                             value={nameForm}
                         ></TextInput>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Product type - ex : Produit frais"
-                            onChangeText={onChangeType}
+                        <SelectDropdown
+                            data= {types}
+                            buttonStyle={styles.select}
+                            dropdownStyle={styles.dropdown}
+                            defaultButtonText="Select product type"
+                            onSelect={onChangeType}
                             value={typeForm}
-                        ></TextInput>
+                        />
                         <TextInput
                             style={styles.input}
                             placeholder="Product image - ex : https://test/img.png"
@@ -282,7 +322,7 @@ export default function SettingsScreen() {
                         <View style={styles.modalButtonContainer}>
                             <TouchableOpacity
                                 style={styles.closeModalButton}
-                                onPress={() => setModalVisible(!modalVisible)}
+                                onPress={() => insertItem(nameForm, typeForm, imgForm)}
                             >
                                 <Text style={styles.textStyle}>Save</Text>
                             </TouchableOpacity>
