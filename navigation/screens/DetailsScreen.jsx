@@ -35,15 +35,19 @@ db.transaction(
   }
 );
 
-export default function DetailsScreen() {
+export default function DetailsScreen({navigation}) {
 
   const [filteredData, setFilteredData] = useState([]);
   const [search, setsearch] = useState('');
   var [products, setProducts] = useState([]);
 
   useEffect(() => {
-    getData();
-  }, []);
+    // Reload list each time we load the page
+    const unsubscribe = navigation.addListener('focus', () => {
+      getData();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   // SELECT from products table
   const getData = () => {

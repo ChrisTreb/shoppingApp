@@ -68,7 +68,7 @@ db.transaction(
 );
 */
 
-export default function SettingsScreen() {
+export default function SettingsScreen({navigation}) {
 
   var [products, setProducts] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
@@ -80,8 +80,12 @@ export default function SettingsScreen() {
   const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
 
   useEffect(() => {
-    getData();
-  }, []);
+    // Reload list each time we load the page
+    const unsubscribe = navigation.addListener('focus', () => {
+      getData();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   // SELECT from products table
   const getData = () => {
