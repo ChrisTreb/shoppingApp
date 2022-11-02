@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@expo/webpack-config": "^0.17.0",
+        "@freakycoder/react-native-bounceable": "^1.0.3",
         "@react-native-community/masked-view": "^0.1.11",
         "@react-navigation/bottom-tabs": "^6.4.0",
         "@react-navigation/native": "^6.0.13",
@@ -20,6 +21,9 @@
         "react": "18.0.0",
         "react-dom": "18.0.0",
         "react-native": "0.69.6",
+        "react-native-animated-spinkit": "^1.5.2",
+        "react-native-dynamic-search-bar": "github:WrathChaos/react-native-dynamic-search-bar#expo",
+        "react-native-dynamic-vector-icons": "github:WrathChaos/react-native-dynamic-vector-icons#expo",
         "react-native-gesture-handler": "~2.5.0",
         "react-native-navigation": "^7.29.1",
         "react-native-reanimated": "~2.9.1",

@@ -8,30 +8,39 @@ import database from '../../database/functions/DatabaseConnect';
 const db = database;
 
 // DEV - Drop table
+/*
 db.transaction(
   tx => {
     tx.executeSql(`DROP TABLE IF EXISTS products`, [], (trans, result) => {
       //console.log("table dropped successfully => " + JSON.stringify(result));
     },
       error => {
-        console.log("error on dropping table " + error.message);
+        console.log("error on dropping table : " + error.message);
       });
   }
 );
+*/
 
 // DEV - Create table
 db.transaction(
   tx => {
-    tx.executeSql(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) NOT NULL, type VARCHAR(50) NOT NULL, img VARCHAR(255), lastOrder TIMESTAMP)`,
+    tx.executeSql(`CREATE TABLE IF NOT EXISTS products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(50) NOT NULL,
+      type VARCHAR(50) NOT NULL,
+      img VARCHAR(255),
+      lastOrder TIMESTAMP,
+      numOrdered INTEGER DEFAULT 0)`,
       [], (trans, result) => {
         //console.log("table created successfully => " + JSON.stringify(result));
       },
       error => {
-        console.log("error on creating table products" + error.message);
+        console.log("error on creating table products : " + error.message);
       });
   }
 );
 
+/*
 // DEV - Insert test data
 db.transaction(
   tx => {
@@ -40,7 +49,7 @@ db.transaction(
         //console.log(trans, JSON.stringify(result))
       },
       error => {
-        console.log("error inserting product into table products " + error.message);
+        console.log("error inserting product into table products : " + error.message);
       });
   }
 );
@@ -53,10 +62,11 @@ db.transaction(
         //console.log(trans, JSON.stringify(result))
       },
       error => {
-        console.log("error inserting product into table products " + error.message);
+        console.log("error inserting product into table products : " + error.message);
       });
   }
 );
+*/
 
 export default function SettingsScreen() {
 
@@ -108,7 +118,7 @@ export default function SettingsScreen() {
               getData();
             },
             error => {
-              console.log("error inserting product into table products " + error.message);
+              console.log("error inserting product into table products : " + error.message);
             });
         }
       );
@@ -145,7 +155,7 @@ export default function SettingsScreen() {
             getData();
           },
             error => {
-              console.log("error deleting product from table products " + error.message);
+              console.log("error deleting product from table products : " + error.message);
             });
         }
       );
@@ -306,6 +316,7 @@ export default function SettingsScreen() {
         renderItem={renderItem}
         keyExtractor={item => item.id}
       />
+      
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} >
           <Ionicons style={styles.ionicon} name='add-outline' onPress={() => setModalVisible(true)} />
