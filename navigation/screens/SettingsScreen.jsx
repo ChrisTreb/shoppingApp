@@ -190,7 +190,7 @@ export default function SettingsScreen({ navigation }) {
     
     var imgPath = ""; 
     
-    if (type == types[0]) { require('../../img/products/fruits.png'); }
+    if (type == types[0]) { imgPath = require('../../img/products/fruits.png'); }
     else if (type == types[1]) { imgPath = require('../../img/products/fresh.png'); }
     else if (type == types[2]) { imgPath = require('../../img/products/spices.png'); }
     else if (type == types[3]) { imgPath = require('../../img/products/liquid.png'); }
