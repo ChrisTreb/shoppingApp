@@ -28,7 +28,6 @@ db.transaction(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(50) NOT NULL,
       type VARCHAR(50) NOT NULL,
-      img VARCHAR(255),
       lastOrder TIMESTAMP,
       numOrdered INTEGER DEFAULT 0)`,
       [], (trans, result) => {
@@ -68,13 +67,12 @@ db.transaction(
 );
 */
 
-export default function SettingsScreen({navigation}) {
+export default function SettingsScreen({ navigation }) {
 
   var [products, setProducts] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [nameForm, onChangeName] = React.useState("");
   const [typeForm, onChangeType] = React.useState("");
-  const [imgForm, onChangeImg] = React.useState("");
 
   // Select options array
   const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
@@ -111,13 +109,15 @@ export default function SettingsScreen({navigation}) {
   const insertItem = (name, type, image) => {
     setModalVisible(false);
 
+    image = setImage(type);
+
     if (name != undefined && type != undefined && name != "" && type != "") {
-      console.log("Inserting new item in db ! " + name + ", " + type + ", " + image);
+      console.log("Inserting new item in db ! " + name + ", " + type);
 
       db.transaction(
         tx => {
-          tx.executeSql(`INSERT INTO 'products' (name, type, img, lastOrder) VALUES (? , ? , ? , ?)`,
-            [name.trim(), type.trim(), image.trim(), new Date().toISOString().slice(0, 10)], (trans, result) => {
+          tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`,
+            [name.trim(), type.trim(), new Date().toISOString().slice(0, 10)], (trans, result) => {
               console.log("Item inserted in DB !");
               getData();
             },
@@ -130,7 +130,6 @@ export default function SettingsScreen({navigation}) {
       // Reset form after submit
       onChangeName("");
       onChangeType("");
-      onChangeImg("");
     } else {
       // If required inputs are not filled => Display alert
       Alert.alert(
@@ -145,7 +144,7 @@ export default function SettingsScreen({navigation}) {
         {
           cancelable: false,
         }
-      ); 
+      );
     }
   }
 
@@ -187,15 +186,33 @@ export default function SettingsScreen({navigation}) {
       }
     );
 
-  const Item = ({ name }) => (
+  const setImage = (type) => {
+    
+    var imgPath = ""; 
+    
+    if (type == types[0]) { require('../../img/products/fruits.png'); }
+    else if (type == types[1]) { imgPath = require('../../img/products/fresh.png'); }
+    else if (type == types[2]) { imgPath = require('../../img/products/spices.png'); }
+    else if (type == types[3]) { imgPath = require('../../img/products/liquid.png'); }
+    else if (type == types[4]) { imgPath = require('../../img/products/frozen.png'); }
+    else if (type == types[5]) { imgPath = require('../../img/products/hygiene.png'); }
+    else if (type == types[6]) { imgPath = require('../../img/products/textile.png'); }
+    else if (type == types[7]) { imgPath = require('../../img/products/hardware.png'); }
+    else { imgPath = require('../../img/products/other.png'); }
+
+    return imgPath;
+  }
+
+  // TODO Put images 
+  const Item = ({ name, type }) => (
     <TouchableOpacity onPress={() => deleteAlert(name)} style={styles.item}>
-      <Image style={styles.productImg} source={require('../../img/products/food.png')} />
+      <Image style={styles.productImg} source={setImage(type)} />
       <Text style={styles.title} activeOpacity={0.8}>{name}</Text>
     </TouchableOpacity >
   );
 
   const renderItem = ({ item }) => (
-    <Item style={styles.title} name={item.name} itemId={item.id} />
+    <Item style={styles.title} name={item.name} type={item.type} itemId={item.id} />
   );
 
   // Style
@@ -320,7 +337,7 @@ export default function SettingsScreen({navigation}) {
         renderItem={renderItem}
         keyExtractor={item => item.id}
       />
-      
+
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} >
           <Ionicons style={styles.ionicon} name='add-outline' onPress={() => setModalVisible(true)} />
@@ -354,17 +371,11 @@ export default function SettingsScreen({navigation}) {
               onSelect={onChangeType}
               value={typeForm}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Product image - ex : https://test/img.png"
-              onChangeText={onChangeImg}
-              value={imgForm}
-            ></TextInput>
 
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
                 style={styles.closeModalButton}
-                onPress={() => insertItem(nameForm, typeForm, imgForm)}
+                onPress={() => insertItem(nameForm, typeForm)}
               >
                 <Text style={styles.textStyle}>Save</Text>
               </TouchableOpacity>
