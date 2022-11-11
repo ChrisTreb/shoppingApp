@@ -56,6 +56,7 @@ export default function DetailsScreen({navigation}) {
         tx.executeSql(`SELECT * FROM 'products' ORDER BY type DESC`, [], (trans, result) => {
           var len = result.rows.length;
           products = result.rows._array;
+          productsAll = result.rows._array;
 
           if (len > 0) {
             console.log('Data = ' + JSON.stringify(result.rows._array));
@@ -87,6 +88,11 @@ export default function DetailsScreen({navigation}) {
     }
   }
 
+   // Clear search text
+   const clearFilter = () => {
+      searchFilter("");
+  }
+
   // Alert on product click => Delete item
   const addToListAlert = (name) =>
     Alert.alert(
@@ -95,12 +101,12 @@ export default function DetailsScreen({navigation}) {
       [
         {
           text: "No",
-          onPress: () => console.log("No, I don't want " + name)
+          onPress: () => console.log("No, I don't want " + name),
+          style: "cancel"
         },
         {
           text: "Yes",
-          onPress: () => console.log(name + " successfully added to your list !"),
-          style: "cancel"
+          onPress: () => console.log(name + " successfully added to your list !") 
         }
       ],
       {
@@ -166,6 +172,7 @@ export default function DetailsScreen({navigation}) {
         fontSize={18}
         value={search}
         onChangeText={(text) => searchFilter(text)}
+        onClearPress={() => clearFilter()}
       ></SearchBar>
       <FlatList
         data={products}
