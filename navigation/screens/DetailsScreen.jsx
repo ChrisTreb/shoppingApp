@@ -35,8 +35,9 @@ db.transaction(
   }
 );
 
-export default function DetailsScreen({navigation}) {
+export default function DetailsScreen({ navigation }) {
 
+  const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
   const [filteredData, setFilteredData] = useState([]);
   const [search, setsearch] = useState('');
   var [products, setProducts] = useState([]);
@@ -88,9 +89,9 @@ export default function DetailsScreen({navigation}) {
     }
   }
 
-   // Clear search text
-   const clearFilter = () => {
-      searchFilter("");
+  // Clear search text
+  const clearFilter = () => {
+    searchFilter("");
   }
 
   // Alert on product click => Delete item
@@ -106,7 +107,7 @@ export default function DetailsScreen({navigation}) {
         },
         {
           text: "Yes",
-          onPress: () => console.log(name + " successfully added to your list !") 
+          onPress: () => console.log(name + " successfully added to your list !")
         }
       ],
       {
@@ -114,15 +115,31 @@ export default function DetailsScreen({navigation}) {
       }
     );
 
-  const Item = ({ name }) => (
+  const setImage = (type) => {
+    var imgPath = "";
+
+    if (type == types[0]) { imgPath = require('../../img/products/fruits.png'); }
+    else if (type == types[1]) { imgPath = require('../../img/products/fresh.png'); }
+    else if (type == types[2]) { imgPath = require('../../img/products/spices.png'); }
+    else if (type == types[3]) { imgPath = require('../../img/products/liquid.png'); }
+    else if (type == types[4]) { imgPath = require('../../img/products/frozen.png'); }
+    else if (type == types[5]) { imgPath = require('../../img/products/hygiene.png'); }
+    else if (type == types[6]) { imgPath = require('../../img/products/textile.png'); }
+    else if (type == types[7]) { imgPath = require('../../img/products/hardware.png'); }
+    else { imgPath = require('../../img/products/other.png'); }
+
+    return imgPath;
+  }
+
+  const Item = ({ name, type }) => (
     <TouchableOpacity onPress={() => addToListAlert(name)} style={styles.item}>
-      <Image style={styles.productImg} source={require('../../img/products/food.png')} />
+      <Image style={styles.productImg} source={setImage(type)} />
       <Text style={styles.title} activeOpacity={0.8}>{name}</Text>
     </TouchableOpacity >
   );
 
   const renderItem = ({ item }) => (
-    <Item style={styles.title} name={item.name} itemId={item.id} />
+    <Item style={styles.title} name={item.name} type={item.type} itemId={item.id} />
   );
 
   const styles = StyleSheet.create({
@@ -166,7 +183,7 @@ export default function DetailsScreen({navigation}) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <SearchBar 
+      <SearchBar
         style={styles.searchbar}
         placeholder="Search product"
         fontSize={18}

@@ -187,7 +187,6 @@ export default function SettingsScreen({ navigation }) {
     );
 
   const setImage = (type) => {
-    
     var imgPath = ""; 
     
     if (type == types[0]) { imgPath = require('../../img/products/fruits.png'); }
