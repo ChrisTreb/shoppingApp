@@ -11,6 +11,10 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
+android
+index.js
+Readme.md
+*.lock
 
 # macOS
 .DS_Store

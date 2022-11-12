@@ -1,7 +1,7 @@
 import * as React from 'react';
+import { SafeAreaView, View, Text, Modal, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert } from 'react-native';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert, Modal, TextInput } from 'react-native';
-import SelectDropdown from 'react-native-select-dropdown'
+import SearchBar from "react-native-dynamic-search-bar";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 
@@ -10,71 +10,39 @@ const db = database;
 // DEV - Drop table
 db.transaction(
   tx => {
-    tx.executeSql(`DROP TABLE IF EXISTS products`, [], (trans, result) => {
-      //console.log("table dropped successfully => " + JSON.stringify(result));
+    tx.executeSql(`DROP TABLE IF EXISTS productsLists`, [], (trans, result) => {
+      console.log("table dropped successfully => " + JSON.stringify(result));
     },
       error => {
-        console.log("error on dropping table : " + error.message);
+        console.log("error on dropping table productsList : " + error.message);
       });
   }
 );
 
-// DEV - Create table
+// DEV - Create table for lists storage
 db.transaction(
   tx => {
-    tx.executeSql(`CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name VARCHAR(50) NOT NULL,
-      type VARCHAR(50) NOT NULL,
-      inCurrentList INTEGER(1),
-      lastOrder TIMESTAMP,
-      numOrdered INTEGER DEFAULT 0)`,
+    tx.executeSql(`CREATE TABLE IF NOT EXISTS productsLists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        createdAt TIMESTAMP,
+        products VARCHAR(255),
+        currentList INTEGER(1))`,
       [], (trans, result) => {
-        //console.log("table created successfully => " + JSON.stringify(result));
+        console.log("table created successfully => " + JSON.stringify(result));
       },
       error => {
-        console.log("error on creating table products : " + error.message);
+        console.log("error on creating table productsLists : " + error.message);
       });
   }
 );
 
-/*
-// DEV - Insert test data
-db.transaction(
-  tx => {
-    tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`,
-      ['Bananes', 'fruits et légumes', new Date().toISOString().slice(0, 10)], (trans, result) => {
-        //console.log(trans, JSON.stringify(result))
-      },
-      error => {
-        console.log("error inserting product into table products : " + error.message);
-      });
-  }
-);
+export default function ListsScreen({ navigation }) {
 
-// DEV - Insert test data
-db.transaction(
-  tx => {
-    tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`,
-      ['Beurre', 'Produits frais', new Date().toISOString().slice(0, 10)], (trans, result) => {
-        //console.log(trans, JSON.stringify(result))
-      },
-      error => {
-        console.log("error inserting product into table products : " + error.message);
-      });
-  }
-);
-*/
-
-export default function SettingsScreen({ navigation }) {
-
-  var [products, setProducts] = useState("");
-  const [modalVisible, setModalVisible] = useState(false);
-  const [nameForm, onChangeName] = React.useState("");
-  const [typeForm, onChangeType] = React.useState("");
-
-  // Select options array
   const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
+  const [filteredData, setFilteredData] = useState([]);
+  const [search, setsearch] = useState('');
+  var [products, setProducts] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     // Reload list each time we load the page
@@ -95,89 +63,52 @@ export default function SettingsScreen({ navigation }) {
           if (len > 0) {
             console.log('Data = ' + JSON.stringify(result.rows._array));
             setProducts(products);
+            setFilteredData(products);
           } else {
             console.log('Database empty...');
             setProducts(products);
+            setFilteredData(products);
           }
         });
       }
     );
   }
 
-  // Insert in table products
-  const insertItem = (name, type, image) => {
-    setModalVisible(false);
-
-    image = setImage(type);
-
-    if (name != undefined && type != undefined && name != "" && type != "") {
-      console.log("Inserting new item in db ! " + name + ", " + type);
-
-      db.transaction(
-        tx => {
-          tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`,
-            [name.trim(), type.trim(), new Date().toISOString().slice(0, 10)], (trans, result) => {
-              console.log("Item inserted in DB !");
-              getData();
-            },
-            error => {
-              console.log("error inserting product into table products : " + error.message);
-            });
-        }
-      );
-
-      // Reset form after submit
-      onChangeName("");
-      onChangeType("");
+  // Search text
+  const searchFilter = (text) => {
+    if (text != "" || text != undefined) {
+      const newData = filteredData.filter((item) => {
+        const itemData = item.name.toUpperCase() ? item.name.toUpperCase() : ''.toUpperCase();
+        const textData = text.toUpperCase();
+        return itemData.indexOf(textData) > -1;
+      });
+      setProducts(newData);
+      setsearch(text);
     } else {
-      // If required inputs are not filled => Display alert
-      Alert.alert(
-        "MISSING INFO",
-        "Product name or product type are required ! Be sure to fill these data.",
-        [
-          {
-            text: "OK, sorry...",
-            onPress: () => console.log("Sorry pressed...")
-          }
-        ],
-        {
-          cancelable: false,
-        }
-      );
+      setProducts(products);
+      setsearch(text);
     }
   }
 
-  // Delete data from products table
-  const deleteItem = (name) => {
-    if (name != null || name != undefined) {
-      db.transaction(
-        tx => {
-          tx.executeSql(`DELETE FROM 'products' WHERE name = '` + name + `'`, [], (trans, result) => {
-            console.log("Deleting item : " + name);
-            getData();
-          },
-            error => {
-              console.log("error deleting product from table products : " + error.message);
-            });
-        }
-      );
-    }
+  // Clear search text
+  const clearFilter = () => {
+    searchFilter("");
   }
 
   // Alert on product click => Delete item
-  const deleteAlert = (name) =>
+  const addToListAlert = (name) =>
     Alert.alert(
-      "DELETE ITEM",
-      "Do you really want to delete this item ?",
+      "ADD TO LIST",
+      "Add this ? " + name,
       [
         {
-          text: "No, keep it",
-          onPress: () => console.log("Keep touched " + name)
+          text: "No",
+          onPress: () => console.log("No, I don't want " + name),
+          style: "cancel"
         },
         {
-          text: "Yes, delete this",
-          onPress: () => deleteItem(name),
-          style: "cancel"
+          text: "Yes",
+          onPress: () => console.log(name + " successfully added to your list !")
         }
       ],
       {
@@ -186,8 +117,8 @@ export default function SettingsScreen({ navigation }) {
     );
 
   const setImage = (type) => {
-    var imgPath = ""; 
-    
+    var imgPath = "";
+
     if (type == types[0]) { imgPath = require('../../img/products/fruits.png'); }
     else if (type == types[1]) { imgPath = require('../../img/products/fresh.png'); }
     else if (type == types[2]) { imgPath = require('../../img/products/spices.png'); }
@@ -201,11 +132,11 @@ export default function SettingsScreen({ navigation }) {
     return imgPath;
   }
 
-  // TODO Put images 
   const Item = ({ name, type }) => (
-    <TouchableOpacity onPress={() => deleteAlert(name)} style={styles.item}>
+    <TouchableOpacity onPress={() => addToListAlert(name)} style={styles.item}>
       <Image style={styles.productImg} source={setImage(type)} />
       <Text style={styles.title} activeOpacity={0.8}>{name}</Text>
+      <Ionicons style={styles.checkIcon} name="checkmark-circle-outline" size={40} />
     </TouchableOpacity >
   );
 
@@ -213,7 +144,6 @@ export default function SettingsScreen({ navigation }) {
     <Item style={styles.title} name={item.name} type={item.type} itemId={item.id} />
   );
 
-  // Style
   const styles = StyleSheet.create({
     container: {
       width: '90%',
@@ -244,6 +174,17 @@ export default function SettingsScreen({ navigation }) {
       marginLeft: 10,
       marginRight: 15,
       borderRadius: 20
+    },
+    checkIcon: {
+      position: "absolute",
+      right: 10,
+      color: "#696969"
+    },
+    searchbar: {
+      width: '100%',
+      height: 50,
+      marginBottom: 20,
+      paddingVertical: 10
     },
     buttonContainer: {
       flex: 1,
@@ -317,19 +258,19 @@ export default function SettingsScreen({ navigation }) {
       margin: 12,
       borderWidth: 1,
       padding: 10
-    },
-    select: {
-      width: '100%',
-      margin: 0
-    },
-    dropdown: {
-      height: 'auto'
     }
   });
 
-  // Render view
   return (
     <SafeAreaView style={styles.container}>
+      <SearchBar
+        style={styles.searchbar}
+        placeholder="Search product"
+        fontSize={18}
+        value={search}
+        onChangeText={(text) => searchFilter(text)}
+        onClearPress={() => clearFilter()}
+      ></SearchBar>
       <FlatList
         data={products}
         renderItem={renderItem}
@@ -337,7 +278,7 @@ export default function SettingsScreen({ navigation }) {
       />
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} >
+        <TouchableOpacity style={styles.button} activeOpacity={0.8} >
           <Ionicons style={styles.ionicon} name='add-outline' onPress={() => setModalVisible(true)} />
         </TouchableOpacity>
       </View>
@@ -353,30 +294,9 @@ export default function SettingsScreen({ navigation }) {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
 
-            <Text style={styles.modalText}>Ajouter un produit</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Product name - ex : Fromage râpé"
-              onChangeText={onChangeName}
-              value={nameForm}
-            ></TextInput>
-            <SelectDropdown
-              data={types}
-              buttonStyle={styles.select}
-              dropdownStyle={styles.dropdown}
-              defaultButtonText="Select product type"
-              onSelect={onChangeType}
-              value={typeForm}
-            />
+            <Text style={styles.modalText}>Current list</Text>
 
             <View style={styles.modalButtonContainer}>
-              <TouchableOpacity
-                style={styles.closeModalButton}
-                onPress={() => insertItem(nameForm, typeForm)}
-              >
-                <Text style={styles.textStyle}>Save</Text>
-              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.closeModalButton}
                 onPress={() => setModalVisible(!modalVisible)}

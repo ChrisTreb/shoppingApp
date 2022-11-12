@@ -5,13 +5,13 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // Screens
 import HomeScreen from './screens/HomeScreen';
-import DetailsScreen from './screens/DetailsScreen';
-import SettingsScreen from './screens/SettingsScreen';
+import ListsScreen from './screens/ListsScreen';
+import ProductsScreen from './screens/ProductsScreen';
 
 //Screen names
 const homeName = "Ma liste de courses";
-const detailsName = "Générer ma liste";
-const settingsName = "Gérer mes produits";
+const listsName = "Générer ma liste";
+const productsName = "Gérer mes produits";
 
 const Tab = createBottomTabNavigator();
 
@@ -43,10 +43,10 @@ function MainContainer() {
             if (rn === homeName) {
               iconName = focused ? 'list' : 'list-outline';
 
-            } else if (rn === detailsName) {
+            } else if (rn === listsName) {
               iconName = focused ? 'create' : 'create-outline';
 
-            } else if (rn === settingsName) {
+            } else if (rn === productsName) {
               iconName = focused ? 'settings' : 'settings-outline';
             }
 
@@ -56,8 +56,8 @@ function MainContainer() {
         })}>
 
         <Tab.Screen name={homeName} component={HomeScreen} />
-        <Tab.Screen name={detailsName} component={DetailsScreen} />
-        <Tab.Screen name={settingsName} component={SettingsScreen} />
+        <Tab.Screen name={listsName} component={ListsScreen} />
+        <Tab.Screen name={productsName} component={ProductsScreen} />
 
       </Tab.Navigator>
     </NavigationContainer>
