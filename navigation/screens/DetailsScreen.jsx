@@ -2,6 +2,7 @@ import * as React from 'react';
 import { SafeAreaView, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert } from 'react-native';
 import { useEffect, useState } from 'react';
 import SearchBar from "react-native-dynamic-search-bar";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
@@ -25,7 +26,7 @@ db.transaction(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         createdAt TIMESTAMP,
         products VARCHAR(255),
-        currentList INTEGER)`,
+        currentList INTEGER(1))`,
       [], (trans, result) => {
         console.log("table created successfully => " + JSON.stringify(result));
       },
@@ -57,7 +58,6 @@ export default function DetailsScreen({ navigation }) {
         tx.executeSql(`SELECT * FROM 'products' ORDER BY type DESC`, [], (trans, result) => {
           var len = result.rows.length;
           products = result.rows._array;
-          productsAll = result.rows._array;
 
           if (len > 0) {
             console.log('Data = ' + JSON.stringify(result.rows._array));
@@ -135,6 +135,7 @@ export default function DetailsScreen({ navigation }) {
     <TouchableOpacity onPress={() => addToListAlert(name)} style={styles.item}>
       <Image style={styles.productImg} source={setImage(type)} />
       <Text style={styles.title} activeOpacity={0.8}>{name}</Text>
+      <Ionicons style={styles.checkIcon} name="checkmark-circle-outline" size={40} />
     </TouchableOpacity >
   );
 
@@ -173,6 +174,11 @@ export default function DetailsScreen({ navigation }) {
       marginRight: 15,
       borderRadius: 20
     },
+    checkIcon: {
+      position: "absolute",
+      right: 10,
+      color: "#696969"
+    },  
     searchbar: {
       width: '100%',
       height: 50,

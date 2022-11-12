@@ -8,7 +8,6 @@ import database from '../../database/functions/DatabaseConnect';
 const db = database;
 
 // DEV - Drop table
-/*
 db.transaction(
   tx => {
     tx.executeSql(`DROP TABLE IF EXISTS products`, [], (trans, result) => {
@@ -19,7 +18,6 @@ db.transaction(
       });
   }
 );
-*/
 
 // DEV - Create table
 db.transaction(
@@ -28,6 +26,7 @@ db.transaction(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(50) NOT NULL,
       type VARCHAR(50) NOT NULL,
+      inCurrentList INTEGER(1),
       lastOrder TIMESTAMP,
       numOrdered INTEGER DEFAULT 0)`,
       [], (trans, result) => {
