@@ -8914,7 +8914,7 @@
   "resolved" "https://registry.npmjs.org/pouchdb-collections/-/pouchdb-collections-1.0.1.tgz"
   "version" "1.0.1"
 
-"prebuild-install@^7.1.0":
+"prebuild-install@^7.1.1":
   "integrity" "sha512-jAXscXWMcCK8GgCoHOfIr0ODh5ai8mj63L2nWrjuAgXE6tDyYGnx4/8o/rCgU+B4JSyZBKbeZqzhtwtC3ovxjw=="
   "resolved" "https://registry.npmjs.org/prebuild-install/-/prebuild-install-7.1.1.tgz"
   "version" "7.1.1"
@@ -10070,27 +10070,27 @@
   dependencies:
     "kind-of" "^6.0.2"
 
-"sharp-cli@^2.1.0":
-  "integrity" "sha512-7435yfR1DbqjBERTCSKghU0ss2PxUq8eNR2wHprvI02FMnhbLkFVhmJxAydQHqv5GGGo1dGrRP196QAhnNZhAA=="
-  "resolved" "https://registry.npmjs.org/sharp-cli/-/sharp-cli-2.1.0.tgz"
-  "version" "2.1.0"
+"sharp-cli@^3.0.0":
+  "integrity" "sha512-kGEOBLpyu1uT9RKI7yrAzL9ozBiRmJTrNYrqiyfquGiS62qJCiLMkV+eBNg4f6Zd44Yy8apXJoaFhbuFRcWaLg=="
+  "resolved" "https://registry.npmjs.org/sharp-cli/-/sharp-cli-3.0.0.tgz"
+  "version" "3.0.0"
   dependencies:
     "bubble-stream-error" "1.0.x"
     "glob" "8.0.x"
     "is-directory" "0.3.x"
     "multiyargs" "1.0.x"
-    "sharp" "0.30.6"
+    "sharp" "0.31.0"
     "yargs" "12.0.x"
 
-"sharp@0.30.6":
-  "integrity" "sha512-lSdVxFxcndzcXggDrak6ozdGJgmIgES9YVZWtAFrwi+a/H5vModaf51TghBtMPw+71sLxUsTy2j+aB7qLIODQg=="
-  "resolved" "https://registry.npmjs.org/sharp/-/sharp-0.30.6.tgz"
-  "version" "0.30.6"
+"sharp@0.31.0":
+  "integrity" "sha512-ft96f8WzGxavg0rkLpMw90MTPMUZDyf0tHjPPh8Ob59xt6KzX8EqtotcqZGUm7kwqpX2pmYiyYX2LL0IZ/FDEw=="
+  "resolved" "https://registry.npmjs.org/sharp/-/sharp-0.31.0.tgz"
+  "version" "0.31.0"
   dependencies:
     "color" "^4.2.3"
     "detect-libc" "^2.0.1"
     "node-addon-api" "^5.0.0"
-    "prebuild-install" "^7.1.0"
+    "prebuild-install" "^7.1.1"
     "semver" "^7.3.7"
     "simple-get" "^4.0.1"
     "tar-fs" "^2.1.1"

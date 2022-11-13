@@ -43,6 +43,7 @@ export default function HomeScreen({ navigation }) {
       // 
       let prod = "[" + list.products + "]";
       products = JSON.parse(prod);
+      products.sort((a, b) => a.type.localeCompare(b.type));
       setProducts(products);
     }
   }
