@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { SafeAreaView, View, Text, Modal, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert } from 'react-native';
+import { SafeAreaView, View, Text, TextInput, Modal, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert } from 'react-native';
 import { useEffect, useState } from 'react';
 import SearchBar from "react-native-dynamic-search-bar";
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -24,9 +24,10 @@ db.transaction(
   tx => {
     tx.executeSql(`CREATE TABLE IF NOT EXISTS productsLists (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        listName VARCHAR(50),
         createdAt TIMESTAMP,
         products VARCHAR(255),
-        currentList INTEGER(1))`,
+        currentList INTEGER(1) DEFAULT 0)`,
       [], (trans, result) => {
         console.log("table created successfully => " + JSON.stringify(result));
       },
@@ -41,13 +42,17 @@ export default function ListsScreen({ navigation }) {
   const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
   const [filteredData, setFilteredData] = useState([]);
   const [search, setsearch] = useState('');
-  var [products, setProducts] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [nameForm, onChangeName] = React.useState("");
+  var [products, setProducts] = useState([]);
+  var [listProducts, setListProducts] = useState("");
+  var [lists, setLists] = useState([]);
 
   useEffect(() => {
     // Reload list each time we load the page
     const unsubscribe = navigation.addListener('focus', () => {
       getData();
+      getListsData();
     });
     return unsubscribe;
   }, [navigation]);
@@ -68,6 +73,26 @@ export default function ListsScreen({ navigation }) {
             console.log('Database empty...');
             setProducts(products);
             setFilteredData(products);
+          }
+        });
+      }
+    );
+  }
+
+  // SELECT from productsLists table
+  const getListsData = () => {
+    db.transaction(
+      tx => {
+        tx.executeSql(`SELECT * FROM 'productsLists' ORDER BY id DESC`, [], (trans, result) => {
+          var len = result.rows.length;
+          lists = result.rows._array;
+
+          if (len > 0) {
+            console.log('DataLists = ' + JSON.stringify(result.rows._array));
+            setLists(lists);
+          } else {
+            console.log('Database empty...');
+            setLists(lists);
           }
         });
       }
@@ -96,25 +121,153 @@ export default function ListsScreen({ navigation }) {
   }
 
   // Alert on product click => Delete item
-  const addToListAlert = (name) =>
+  const addToListAlert = (item) =>
     Alert.alert(
       "ADD TO LIST",
-      "Add this ? " + name,
+      "Add this ? " + item.name,
       [
         {
           text: "No",
-          onPress: () => console.log("No, I don't want " + name),
+          onPress: () => console.log("No, I don't want " + item.name),
           style: "cancel"
         },
         {
           text: "Yes",
-          onPress: () => console.log(name + " successfully added to your list !")
+          onPress: () => insertIntoList(item)
         }
       ],
       {
         cancelable: true,
       }
     );
+
+  // Insert list in table productsLists
+  const insertList = (name) => {
+    setModalVisible(false);
+    setListProducts(""); // Set empty list on create new
+
+    if (name != undefined && name != "") {
+      console.log("Inserting new list in db ! " + name);
+
+      // Update currentList column before creating new list
+      db.transaction(
+        tx => {
+          tx.executeSql(`UPDATE productsLists SET currentList = 0 WHERE EXISTS (SELECT currentList FROM productsLists WHERE currentList = 1)`,
+            [], (trans, result) => {
+              console.log("Lists updated in DB !");
+              getListsData();
+            },
+            error => {
+              console.log("error updating productsList for currentList : " + error.message);
+            });
+        }
+      );
+
+      // Insert new list and set currentList
+      db.transaction(
+        tx => {
+          tx.executeSql(`INSERT INTO productsLists (listName, createdAt, currentList) VALUES (?, ?, ?)`,
+            [name.trim(), new Date().toISOString().slice(0, 10), 1], (trans, result) => {
+              console.log("List inserted in DB !");
+              getListsData();
+            },
+            error => {
+              console.log("error inserting productsList into table productsLists : " + error.message);
+            });
+        }
+      );
+
+      // Reset form after submit
+      onChangeName("");
+    } else {
+      // If required inputs are not filled => Display alert
+      Alert.alert(
+        "MISSING INFO",
+        "List name is required ! Be sure to fill this data.",
+        [
+          {
+            text: "OK, sorry...",
+            onPress: () => console.log("Sorry pressed...")
+          }
+        ],
+        {
+          cancelable: false,
+        }
+      );
+    }
+  }
+
+  // Insert product into list
+  const insertIntoList = (item) => {
+
+    if (getListsData() != null || getListsData() != undefined) {
+      // Select products from currentList
+      db.transaction(
+        tx => {
+          tx.executeSql(`SELECT products FROM productsLists WHERE currentList = 1`,
+            [], (trans, result) => {
+              console.log(result.rows._array[0].products);
+              if (result.rows._array[0].products != null) {
+                listProducts = result.rows._array[0].products;
+                setListProducts(listProducts);
+              }
+            },
+            error => {
+              console.log("error updating products in currentList : " + error.message);
+            });
+        }
+      );
+
+      console.log("listProducts : " + listProducts);
+
+      // Update products in current list
+      if (!listProducts.includes(item.name)) {
+
+        db.transaction(
+          tx => {
+            tx.executeSql(`UPDATE productsLists SET products = ? WHERE currentList = 1`,
+              [item.name], (trans, result) => {
+                console.log("Products updated in currentList !");
+                getListsData();
+              },
+              error => {
+                console.log("error updating products in currentList : " + error.message);
+              });
+          }
+        );
+      } else {
+        // If product is already in the list
+        Alert.alert(
+          "ITEM IS IN THE LIST",
+          "The selected item is already in the list",
+          [
+            {
+              text: "OK",
+              onPress: () => console.log("The selected item is already in the list")
+            }
+          ],
+          {
+            cancelable: false,
+          }
+        );
+      }
+    } else {
+      // If no list created
+      Alert.alert(
+        "CREATE A LIST",
+        "Create a list before inserting items !",
+        [
+          {
+            text: "OK",
+            onPress: () => console.log("Create a list before inserting items !")
+          }
+        ],
+        {
+          cancelable: false,
+        }
+      );
+    }
+  }
 
   const setImage = (type) => {
     var imgPath = "";
@@ -132,16 +285,16 @@ export default function ListsScreen({ navigation }) {
     return imgPath;
   }
 
-  const Item = ({ name, type }) => (
-    <TouchableOpacity onPress={() => addToListAlert(name)} style={styles.item}>
-      <Image style={styles.productImg} source={setImage(type)} />
-      <Text style={styles.title} activeOpacity={0.8}>{name}</Text>
+  const Item = ({ item }) => (
+    <TouchableOpacity onPress={() => addToListAlert(item)} style={styles.item}>
+      <Image style={styles.productImg} source={setImage(item.type)} />
+      <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
       <Ionicons style={styles.checkIcon} name="checkmark-circle-outline" size={40} />
     </TouchableOpacity >
   );
 
   const renderItem = ({ item }) => (
-    <Item style={styles.title} name={item.name} type={item.type} itemId={item.id} />
+    <Item style={styles.title} item={item} />
   );
 
   const styles = StyleSheet.create({
@@ -294,9 +447,21 @@ export default function ListsScreen({ navigation }) {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
 
-            <Text style={styles.modalText}>Current list</Text>
+            <Text style={styles.modalText}>Create a list</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter list name - ex : My list"
+              onChangeText={onChangeName}
+              value={nameForm}
+            ></TextInput>
 
             <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={styles.closeModalButton}
+                onPress={() => insertList(nameForm)}
+              >
+                <Text style={styles.textStyle}>Submit</Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.closeModalButton}
                 onPress={() => setModalVisible(!modalVisible)}
