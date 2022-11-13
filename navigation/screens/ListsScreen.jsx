@@ -211,6 +211,7 @@ export default function ListsScreen({ navigation }) {
                 setListProducts(listProducts);
               } else {
                 listProducts = result.rows._array[0].products + "," + item.name;
+                setListProducts(listProducts);
               }
             },
             error => {
@@ -218,6 +219,8 @@ export default function ListsScreen({ navigation }) {
             });
         }
       );
+
+      console.log("listProducts => " + listProducts)
 
       // Update products in current list
       if (!listProducts.includes(item.name)) {
