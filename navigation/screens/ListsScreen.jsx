@@ -206,10 +206,11 @@ export default function ListsScreen({ navigation }) {
         tx => {
           tx.executeSql(`SELECT products FROM productsLists WHERE currentList = 1`,
             [], (trans, result) => {
-              console.log(result.rows._array[0].products);
-              if (result.rows._array[0].products != null) {
-                listProducts = result.rows._array[0].products;
+              if (!result.rows._array[0].products) {
+                listProducts = item.name;
                 setListProducts(listProducts);
+              } else {
+                listProducts = result.rows._array[0].products + "," + item.name;
               }
             },
             error => {
@@ -218,15 +219,13 @@ export default function ListsScreen({ navigation }) {
         }
       );
 
-      console.log("listProducts : " + listProducts);
-
       // Update products in current list
       if (!listProducts.includes(item.name)) {
 
         db.transaction(
           tx => {
             tx.executeSql(`UPDATE productsLists SET products = ? WHERE currentList = 1`,
-              [item.name], (trans, result) => {
+              [listProducts], (trans, result) => {
                 console.log("Products updated in currentList !");
                 getListsData();
               },
