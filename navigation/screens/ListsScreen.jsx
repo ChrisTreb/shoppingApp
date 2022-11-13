@@ -6,7 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
-
+/*
 // DEV - Drop table
 db.transaction(
   tx => {
@@ -18,6 +18,7 @@ db.transaction(
       });
   }
 );
+*/
 
 // DEV - Create table for lists storage
 db.transaction(
@@ -61,7 +62,7 @@ export default function ListsScreen({ navigation }) {
   const getData = () => {
     db.transaction(
       tx => {
-        tx.executeSql(`SELECT * FROM 'products' ORDER BY type DESC`, [], (trans, result) => {
+        tx.executeSql(`SELECT * FROM products ORDER BY type DESC`, [], (trans, result) => {
           var len = result.rows.length;
           products = result.rows._array;
 
@@ -83,7 +84,7 @@ export default function ListsScreen({ navigation }) {
   const getListsData = () => {
     db.transaction(
       tx => {
-        tx.executeSql(`SELECT * FROM 'productsLists' ORDER BY id DESC`, [], (trans, result) => {
+        tx.executeSql(`SELECT * FROM productsLists ORDER BY id DESC`, [], (trans, result) => {
           var len = result.rows.length;
           lists = result.rows._array;
 
@@ -207,10 +208,10 @@ export default function ListsScreen({ navigation }) {
           tx.executeSql(`SELECT products FROM productsLists WHERE currentList = 1`,
             [], (trans, result) => {
               if (!result.rows._array[0].products) {
-                listProducts = item.name;
+                listProducts = JSON.stringify(item);
                 setListProducts(listProducts);
               } else {
-                listProducts = result.rows._array[0].products + "," + item.name;
+                listProducts = result.rows._array[0].products + "," + JSON.stringify(item);
                 setListProducts(listProducts);
               }
             },
@@ -223,7 +224,7 @@ export default function ListsScreen({ navigation }) {
       console.log("listProducts => " + listProducts)
 
       // Update products in current list
-      if (!listProducts.includes(item.name)) {
+      if (!listProducts.includes(JSON.stringify(item))) {
 
         db.transaction(
           tx => {
@@ -471,6 +472,9 @@ export default function ListsScreen({ navigation }) {
                 <Text style={styles.textStyle}>Close</Text>
               </TouchableOpacity>
             </View>
+
+            <Text style={styles.modalText}>My current list</Text>
+            <Text style={styles.textStyle}>{listProducts}</Text>
           </View>
         </View>
       </Modal>

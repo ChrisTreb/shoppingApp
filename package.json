@@ -37,7 +37,7 @@
     "react-native-vector-icons": "^9.2.0",
     "react-native-web": "^0.18.9",
     "regjsparser": "^0.9.1",
-    "sharp-cli": "^3.0.0"
+    "sharp-cli": "^2.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
