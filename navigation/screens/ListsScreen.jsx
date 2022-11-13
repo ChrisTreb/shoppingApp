@@ -200,7 +200,7 @@ export default function ListsScreen({ navigation }) {
   // Insert product into list
   const insertIntoList = (item) => {
 
-    if (getListsData() != null || getListsData() != undefined) {
+    if (lists.length > 0) {
       // Select products from currentList
       db.transaction(
         tx => {
