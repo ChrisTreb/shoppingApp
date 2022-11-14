@@ -40,7 +40,7 @@ export default function HomeScreen({ navigation }) {
     );
 
     if (list) {
-      // 
+      // Set list into array for parsing
       let prod = "[" + list.products + "]";
       products = JSON.parse(prod);
       products.sort((a, b) => a.type.localeCompare(b.type));
