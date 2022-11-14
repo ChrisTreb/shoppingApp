@@ -18,7 +18,6 @@ db.transaction(
       });
   }
 );
-*/
 
 // DEV - Create table for lists storage
 db.transaction(
@@ -37,6 +36,7 @@ db.transaction(
       });
   }
 );
+*/
 
 export default function ListsScreen({ navigation }) {
 
@@ -221,8 +221,6 @@ export default function ListsScreen({ navigation }) {
         }
       );
 
-      console.log("listProducts => " + listProducts)
-
       // Update products in current list
       if (!listProducts.includes(JSON.stringify(item))) {
 
@@ -387,6 +385,12 @@ export default function ListsScreen({ navigation }) {
       marginBottom: 15,
       textAlign: "center"
     },
+    modalText2: {
+      fontSize: 25,
+      fontWeight: 'bold',
+      marginVertical: 15,
+      textAlign: "center"
+    },
     modalButtonContainer: {
       marginVertical: 40,
       width: '100%',
@@ -404,7 +408,6 @@ export default function ListsScreen({ navigation }) {
       backgroundColor: '#1E90FF'
     },
     textStyle: {
-      color: '#fff',
       fontSize: 16
     },
     input: {
@@ -472,9 +475,6 @@ export default function ListsScreen({ navigation }) {
                 <Text style={styles.textStyle}>Close</Text>
               </TouchableOpacity>
             </View>
-
-            <Text style={styles.modalText}>My current list</Text>
-            <Text style={styles.textStyle}>{listProducts}</Text>
           </View>
         </View>
       </Modal>

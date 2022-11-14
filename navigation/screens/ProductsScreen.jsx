@@ -19,7 +19,6 @@ db.transaction(
       });
   }
 );
-*/
 
 // DEV - Create table
 db.transaction(
@@ -36,33 +35,6 @@ db.transaction(
       },
       error => {
         console.log("error on creating table products : " + error.message);
-      });
-  }
-);
-
-/*
-// DEV - Insert test data
-db.transaction(
-  tx => {
-    tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`,
-      ['Bananes', 'fruits et légumes', new Date().toISOString().slice(0, 10)], (trans, result) => {
-        //console.log(trans, JSON.stringify(result))
-      },
-      error => {
-        console.log("error inserting product into table products : " + error.message);
-      });
-  }
-);
-
-// DEV - Insert test data
-db.transaction(
-  tx => {
-    tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`,
-      ['Beurre', 'Produits frais', new Date().toISOString().slice(0, 10)], (trans, result) => {
-        //console.log(trans, JSON.stringify(result))
-      },
-      error => {
-        console.log("error inserting product into table products : " + error.message);
       });
   }
 );
