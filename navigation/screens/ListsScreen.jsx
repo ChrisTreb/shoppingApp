@@ -62,7 +62,7 @@ export default function ListsScreen({ navigation }) {
   const getData = () => {
     db.transaction(
       tx => {
-        tx.executeSql(`SELECT * FROM products ORDER BY type DESC`, [], (trans, result) => {
+        tx.executeSql(`SELECT * FROM products ORDER BY type ASC`, [], (trans, result) => {
           var len = result.rows.length;
           products = result.rows._array;
 
@@ -84,7 +84,7 @@ export default function ListsScreen({ navigation }) {
   const getListsData = () => {
     db.transaction(
       tx => {
-        tx.executeSql(`SELECT * FROM productsLists ORDER BY id DESC`, [], (trans, result) => {
+        tx.executeSql(`SELECT * FROM productsLists ORDER BY id ASC`, [], (trans, result) => {
           var len = result.rows.length;
           lists = result.rows._array;
 

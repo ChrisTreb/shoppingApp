@@ -90,7 +90,7 @@ export default function ProductsScreen({ navigation }) {
   const getData = () => {
     db.transaction(
       tx => {
-        tx.executeSql(`SELECT * FROM 'products' ORDER BY type DESC`, [], (trans, result) => {
+        tx.executeSql(`SELECT * FROM 'products' ORDER BY type ASC`, [], (trans, result) => {
           var len = result.rows.length;
           products = result.rows._array;
 
