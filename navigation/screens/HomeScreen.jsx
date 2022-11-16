@@ -69,9 +69,9 @@ export default function HomeScreen({ navigation }) {
   }
 
   const Item = ({ item }) => (
-    <TouchableOpacity onPress={() => hideItem(item)} style={styles.item}>
-      <Image style={styles.productImg} source={setImage(item.type)} />
-      <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
+    <TouchableOpacity onPress={() => hideItem(item)} style={ styles.item }>
+      <Image style={ styles.productImg } source={ setImage(item.type) } />
+      <Text style={ styles.title } activeOpacity={0.8}>{ item.name }</Text>
     </TouchableOpacity >
   );
 
