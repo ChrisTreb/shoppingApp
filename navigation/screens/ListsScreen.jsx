@@ -433,7 +433,7 @@ export default function ListsScreen({ navigation }) {
       <FlatList
         data={products}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item ? item.id : 0}
       />
 
       <View style={styles.buttonContainer}>

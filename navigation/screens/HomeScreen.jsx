@@ -68,16 +68,24 @@ export default function HomeScreen({ navigation }) {
     console.log("Hidding " + item.name);
   }
 
-  const Item = ({ item }) => (
-    <TouchableOpacity onPress={() => hideItem(item)} style={ styles.item }>
-      <Image style={ styles.productImg } source={ setImage(item.type) } />
-      <Text style={ styles.title } activeOpacity={0.8}>{ item.name }</Text>
-    </TouchableOpacity >
-  );
+  const Item = ({ item }) => {
+    if (item) {
+      return (
+        <TouchableOpacity onPress={() => hideItem(item)} style={styles.item}>
+          <Image style={styles.productImg} source={setImage(item.type)} />
+          <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
+        </TouchableOpacity >
+      )
+    }
+  };
 
-  const renderItem = ({ item }) => (
-    <Item style={styles.title} item={item} />
-  );
+  const renderItem = ({ item }) => {
+    if (item) {
+      return (
+        <Item style={styles.title} item={item} />
+      )
+    }
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -85,6 +93,9 @@ export default function HomeScreen({ navigation }) {
       flex: 1,
       paddingTop: StatusBar.currentHeight,
       marginHorizontal: 16
+    },
+    list: {
+      flex: 1
     },
     item: {
       flex: 1,
@@ -159,7 +170,7 @@ export default function HomeScreen({ navigation }) {
       <FlatList
         data={products}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item ? item.id : 0}
       />
       <Modal
         animationType="fade"

@@ -306,7 +306,7 @@ export default function ProductsScreen({ navigation }) {
       <FlatList
         data={products}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item ? item.id : 0}
       />
 
       <View style={styles.buttonContainer}>
@@ -325,9 +325,7 @@ export default function ProductsScreen({ navigation }) {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-
             <Text style={styles.modalText}>Ajouter un produit</Text>
-
             <TextInput
               style={styles.input}
               placeholder="Product name - ex : Fromage râpé"
