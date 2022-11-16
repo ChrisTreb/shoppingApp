@@ -6,9 +6,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
-
-// DEV - Drop table
 /*
+// DEV - Drop table
 db.transaction(
   tx => {
     tx.executeSql(`DROP TABLE IF EXISTS products`, [], (trans, result) => {
@@ -19,6 +18,7 @@ db.transaction(
       });
   }
 );
+*/
 
 // DEV - Create table
 db.transaction(
@@ -38,7 +38,6 @@ db.transaction(
       });
   }
 );
-*/
 
 export default function ProductsScreen({ navigation }) {
 
