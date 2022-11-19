@@ -61,7 +61,7 @@ export default function ProductsScreen({ navigation }) {
   const getData = () => {
     db.transaction(
       tx => {
-        tx.executeSql(`SELECT * FROM 'products' ORDER BY type ASC`, [], (trans, result) => {
+        tx.executeSql(`SELECT * FROM products ORDER BY type ASC`, [], (trans, result) => {
           var len = result.rows.length;
           products = result.rows._array;
 
@@ -88,7 +88,7 @@ export default function ProductsScreen({ navigation }) {
 
       db.transaction(
         tx => {
-          tx.executeSql(`INSERT INTO 'products' (name, type, lastOrder) VALUES (? , ? , ?)`,
+          tx.executeSql(`INSERT INTO products (name, type, lastOrder) VALUES (? , ? , ?)`,
             [name.trim(), type.trim(), new Date().toISOString().slice(0, 10)], (trans, result) => {
               console.log("Item inserted in DB !");
               getData();
@@ -125,7 +125,7 @@ export default function ProductsScreen({ navigation }) {
     if (name != null || name != undefined) {
       db.transaction(
         tx => {
-          tx.executeSql(`DELETE FROM 'products' WHERE name = '` + name + `'`, [], (trans, result) => {
+          tx.executeSql(`DELETE FROM products WHERE name = '` + name + `'`, [], (trans, result) => {
             console.log("Deleting item : " + name);
             getData();
           },
@@ -174,7 +174,6 @@ export default function ProductsScreen({ navigation }) {
     return imgPath;
   }
 
-  // TODO Put images 
   const Item = ({ name, type }) => (
     <TouchableOpacity onPress={() => deleteAlert(name)} style={styles.item}>
       <Image style={styles.productImg} source={setImage(type)} />

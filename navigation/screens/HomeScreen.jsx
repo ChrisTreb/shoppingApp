@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Modal } from 'react-native';
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Modal, ListViewBase } from 'react-native';
 import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
@@ -15,21 +15,38 @@ export default function HomeScreen({ navigation }) {
   useEffect(() => {
     // Reload list each time we load the page
     const unsubscribe = navigation.addListener('focus', () => {
-      getCurrentListData();
+      getCurrentListProducts();
     });
     return unsubscribe;
   }, [navigation]);
 
   // SELECT from productsLists table
-  const getCurrentListData = () => {
+  const getCurrentListProducts = () => {
+    db.transaction(
+      tx => {
+        tx.executeSql(`SELECT * FROM products WHERE inCurrentList = 1`, [], (trans, result) => {
+          var len = result.rows.length;
+          if (len > 0) {
+            products = result.rows._array;
+            console.log('Products in currentList = ' + JSON.stringify(result.rows._array));
+            setProducts(products);
+          } else {
+            console.log('Database empty...');
+            setProducts(products);
+          }
+        });
+      }
+    );
+  }
 
+  const getCurrentListData = () => {
     db.transaction(
       tx => {
         tx.executeSql(`SELECT * FROM productsLists WHERE currentList = 1`, [], (trans, result) => {
           var len = result.rows.length;
           if (len > 0) {
             list = result.rows._array[0];
-            console.log('currentList = ' + JSON.stringify(result.rows._array[0]));
+            console.log('CurrentList = ' + JSON.stringify(result.rows._array[0]));
             setList(list);
           } else {
             console.log('Database empty...');
@@ -38,14 +55,6 @@ export default function HomeScreen({ navigation }) {
         });
       }
     );
-
-    if (list) {
-      // Set list into array for parsing
-      let prod = "[" + list.products + "]";
-      products = JSON.parse(prod);
-      products.sort((a, b) => a.type.localeCompare(b.type));
-      setProducts(products);
-    }
   }
 
   const setImage = (type) => {
@@ -64,6 +73,7 @@ export default function HomeScreen({ navigation }) {
     return imgPath;
   }
 
+  // TODO add check onPress
   const hideItem = (item) => {
     console.log("Hidding " + item.name);
   }
@@ -91,11 +101,19 @@ export default function HomeScreen({ navigation }) {
     container: {
       width: '90%',
       flex: 1,
-      paddingTop: StatusBar.currentHeight,
       marginHorizontal: 16
     },
-    list: {
-      flex: 1
+    listHeader: {
+      flex: 1,
+      maxHeight: 50,
+      paddingVertical: 10,
+      justifyContent: "center",
+      alignContent: "center",
+    },
+    listHeaderText: {
+      fontSize: 14,
+      marginLeft: 10,
+      fontWeight: "bold"
     },
     item: {
       flex: 1,
@@ -122,6 +140,8 @@ export default function HomeScreen({ navigation }) {
       borderRadius: 20
     },
     modalView: {
+      backgroundColor: "#000",
+      height: "100%",
       padding: 35,
       alignItems: "center",
       shadowColor: "#000",
@@ -149,7 +169,7 @@ export default function HomeScreen({ navigation }) {
       marginBottom: 50
     },
     startButton: {
-      minHeight: 60,
+      maxHeight: 60,
       paddingVertical: 10,
       backgroundColor: "#1E90FF",
       flex: 1,
@@ -167,12 +187,21 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+
+      <View style={styles.listHeader}>
+        { list.listName ?
+          <Text style={styles.listHeaderText}>{list.listName} - {list.createdAt}</Text>
+          : 
+          <Text style={styles.listHeaderText}>No Active List</Text>
+        }
+      </View>
+
       <FlatList
         data={products}
         renderItem={renderItem}
         keyExtractor={(item) => item ? item.id : 0}
       />
-      <Modal
+      <Modal style={styles.modal}
         animationType="fade"
         transparent={true}
         visible={modalVisible}

@@ -164,6 +164,20 @@ export default function ListsScreen({ navigation }) {
         }
       );
 
+      // Update all products inCurrentList before creating new list
+      db.transaction(
+        tx => {
+          tx.executeSql(`UPDATE products SET inCurrentList = 0 WHERE inCurrentList = 1`,
+            [], (trans, result) => {
+              console.log("Products updated in DB set inCurrentList = 0 !");
+              getListsData();
+            },
+            error => {
+              console.log("error updating products : " + error.message);
+            });
+        }
+      );
+
       // Insert new list and set currentList
       db.transaction(
         tx => {
@@ -224,6 +238,21 @@ export default function ListsScreen({ navigation }) {
       // Update products in current list
       if (!listProducts.includes(JSON.stringify(item))) {
 
+        // Update inCurrentList = 1 in products table
+        db.transaction(
+          tx => {
+            tx.executeSql("UPDATE products SET inCurrentList = 1 WHERE id = '" + item.id + "'",
+              [], (trans, result) => {
+                console.log("Product inCurrentList updated in product !");
+                getListsData();
+              },
+              error => {
+                console.log("error updating product in products : " + error.message);
+              });
+          }
+        );
+
+        // Update list => Add new item
         db.transaction(
           tx => {
             tx.executeSql(`UPDATE productsLists SET products = ? WHERE currentList = 1`,
