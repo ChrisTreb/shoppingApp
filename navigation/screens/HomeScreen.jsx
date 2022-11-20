@@ -16,6 +16,7 @@ export default function HomeScreen({ navigation }) {
     // Reload list each time we load the page
     const unsubscribe = navigation.addListener('focus', () => {
       getCurrentListProducts();
+      getCurrentListData();
     });
     return unsubscribe;
   }, [navigation]);
@@ -73,15 +74,14 @@ export default function HomeScreen({ navigation }) {
     return imgPath;
   }
 
-  // TODO add check onPress
-  const hideItem = (item) => {
-    console.log("Hidding " + item.name);
+  function onPressItem(item) {
+    console.log("Pressed : " + item.name);
   }
 
   const Item = ({ item }) => {
     if (item) {
       return (
-        <TouchableOpacity onPress={() => hideItem(item)} style={styles.item}>
+        <TouchableOpacity onPress={() => onPressItem(item)} style={styles.item}>
           <Image style={styles.productImg} source={setImage(item.type)} />
           <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
         </TouchableOpacity >
@@ -215,7 +215,7 @@ export default function HomeScreen({ navigation }) {
             <Image style={styles.homeImg} source={require('../../img/home/home.png')} />
             <TouchableOpacity style={styles.startButton}
               activeOpacity={0.8}
-              onPress={() => [getCurrentListData(), setModalVisible(!modalVisible)]}
+              onPress={() => setModalVisible(!modalVisible)}
             >
               <Text style={styles.startButtonText}>Let's go Shopping !</Text>
             </TouchableOpacity>

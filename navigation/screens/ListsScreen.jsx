@@ -319,7 +319,6 @@ export default function ListsScreen({ navigation }) {
     <TouchableOpacity onPress={() => addToListAlert(item)} style={styles.item}>
       <Image style={styles.productImg} source={setImage(item.type)} />
       <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
-      <Ionicons style={styles.checkIcon} name="checkmark-circle-outline" size={40} />
     </TouchableOpacity >
   );
 
@@ -387,10 +386,6 @@ export default function ListsScreen({ navigation }) {
       alignItems: 'center',
       justifyContent: 'center',
       height: 70
-    },
-    ionicon: {
-      color: '#fff',
-      fontSize: 40
     },
     modalView: {
       marginHorizontal: 20,
