@@ -50,7 +50,7 @@ export default function HomeScreen({ navigation }) {
           var len = result.rows.length;
           if (len > 0) {
             list = result.rows._array[0];
-            console.log('CurrentList = ' + JSON.stringify(result.rows._array[0]));
+            console.log('CurrentList ' + list.listName + " = " + JSON.stringify(result.rows._array[0]));
             setList(list);
           } else {
             console.log('CurrentList is empty... ');
@@ -253,7 +253,7 @@ export default function HomeScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar />
       <View style={styles.listHeader}>
-        {list.name ?
+        { list.listName ?
           <Text style={styles.listHeaderText}>{list.listName} - {list.createdAt}</Text>
           :
           <Text style={styles.listHeaderText}>No Active List</Text>
