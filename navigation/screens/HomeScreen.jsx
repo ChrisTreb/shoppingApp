@@ -9,7 +9,7 @@ export default function HomeScreen({ navigation }) {
 
   const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
   const [modalVisible, setModalVisible] = useState(true);
-  var [list, setList] = useState("");
+  var [list, setList] = useState({});
   var [products, setProducts] = useState([]);
   var [displayedProducts, setDisplayedProducts] = useState([]);
 
@@ -33,8 +33,10 @@ export default function HomeScreen({ navigation }) {
             console.log('Products in currentList = ' + JSON.stringify(result.rows._array));
             setProducts(products);
           } else {
-            console.log('Database empty...');
+            console.log('Database empty... no products in currentList');
+            products = null;
             setProducts(products);
+            setDisplayedProducts(displayedProducts);
           }
         });
       }
@@ -51,8 +53,11 @@ export default function HomeScreen({ navigation }) {
             console.log('CurrentList = ' + JSON.stringify(result.rows._array[0]));
             setList(list);
           } else {
-            console.log('Database empty...');
+            console.log('CurrentList is empty... ');
             setList(list);
+            products = null
+            setProducts(products);
+            setDisplayedProducts(displayedProducts);
           }
         });
       }
@@ -134,15 +139,35 @@ export default function HomeScreen({ navigation }) {
     },
     listHeader: {
       flex: 1,
-      maxHeight: 50,
+      height: 50,
+      maxHeight: 60,
       paddingVertical: 10,
       justifyContent: "center",
-      alignContent: "center",
+      alignContent: "center"
     },
     listHeaderText: {
       fontSize: 14,
       marginLeft: 10,
-      fontWeight: "bold"
+      fontWeight: "bold",
+      marginTop: 20
+    },
+    emptyListContainer: {
+      flex: 1,
+      width: "100%",
+      height: "20%",
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    emptyListImage: {
+      maxWidth: 150,
+      maxHeight: 150,
+      marginBottom: 20
+    },
+    emptyListText: {
+      textAlign: "center",
+      fontSize: 20,
+      fontWeight: "bold",
+      paddingHorizontal: 50
     },
     item: {
       flex: 1,
@@ -228,18 +253,26 @@ export default function HomeScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar />
       <View style={styles.listHeader}>
-        {list.listName ?
+        {list.name ?
           <Text style={styles.listHeaderText}>{list.listName} - {list.createdAt}</Text>
           :
           <Text style={styles.listHeaderText}>No Active List</Text>
         }
       </View>
 
-      <FlatList
-        data={products}
-        renderItem={renderItem}
-        keyExtractor={(item) => item ? item.id : 0}
-      />
+      {
+        list && products ?
+        <FlatList
+          data={products}
+          renderItem={renderItem}
+          keyExtractor={(item) => item ? item.id : 0}
+        />
+        : <View style={styles.emptyListContainer}>
+            <Image style={styles.emptyListImage} source={require('../../img/home/cat.png')} />
+            <Text style={styles.emptyListText}>Create a list first and add at least one product !</Text>
+          </View>
+      }
+
       <Modal style={styles.modal}
         animationType="fade"
         transparent={true}
