@@ -357,11 +357,6 @@ export default function ListsScreen({ navigation }) {
       marginRight: 15,
       borderRadius: 20
     },
-    checkIcon: {
-      position: "absolute",
-      right: 10,
-      color: "#696969"
-    },
     searchbar: {
       width: '100%',
       height: 50,
@@ -372,7 +367,7 @@ export default function ListsScreen({ navigation }) {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#1E90FF',
+      backgroundColor: '#483D8B',
       width: 70,
       height: 70,
       position: 'absolute',
@@ -386,6 +381,10 @@ export default function ListsScreen({ navigation }) {
       alignItems: 'center',
       justifyContent: 'center',
       height: 70
+    },
+    ionicon: {
+      color: '#fff',
+      fontSize: 40
     },
     modalView: {
       marginHorizontal: 20,

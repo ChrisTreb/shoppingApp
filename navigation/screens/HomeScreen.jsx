@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Modal, ListViewBase } from 'react-native';
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal } from 'react-native';
 import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
@@ -74,14 +74,10 @@ export default function HomeScreen({ navigation }) {
     return imgPath;
   }
 
-  function onPressItem(item) {
-    console.log("Pressed : " + item.name);
-  }
-
   const Item = ({ item }) => {
     if (item) {
       return (
-        <TouchableOpacity onPress={() => onPressItem(item)} style={styles.item}>
+        <TouchableOpacity onPress={() => console.log(item.id)} style={styles.item}>
           <Image style={styles.productImg} source={setImage(item.type)} />
           <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
         </TouchableOpacity >
