@@ -253,7 +253,7 @@ export default function HomeScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar />
       <View style={styles.listHeader}>
-        { list.listName ?
+        {list.listName ?
           <Text style={styles.listHeaderText}>{list.listName} - {list.createdAt}</Text>
           :
           <Text style={styles.listHeaderText}>No Active List</Text>
@@ -262,12 +262,13 @@ export default function HomeScreen({ navigation }) {
 
       {
         list && products ?
-        <FlatList
-          data={products}
-          renderItem={renderItem}
-          keyExtractor={(item) => item ? item.id : 0}
-        />
-        : <View style={styles.emptyListContainer}>
+          <FlatList
+            data={products}
+            renderItem={renderItem}
+            keyExtractor={(item) => item ? item.id : 0}
+          />
+          :
+          <View style={styles.emptyListContainer}>
             <Image style={styles.emptyListImage} source={require('../../img/home/cat.png')} />
             <Text style={styles.emptyListText}>Create a list first and add at least one product !</Text>
           </View>

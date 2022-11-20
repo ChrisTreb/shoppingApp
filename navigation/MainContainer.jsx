@@ -7,11 +7,13 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from './screens/HomeScreen';
 import ListsScreen from './screens/ListsScreen';
 import ProductsScreen from './screens/ProductsScreen';
+import OverviewScreen from './screens/OverviewScreen';
 
 //Screen names
-const homeName = "Ma liste de courses";
-const listsName = "Générer ma liste";
-const productsName = "Gérer mes produits";
+const homeName = "Ma liste";
+const listsName = "Listes";
+const productsName = "Produits";
+const overviewName = "Dashboard";
 
 const Tab = createBottomTabNavigator();
 
@@ -48,7 +50,11 @@ function MainContainer() {
 
             } else if (rn === productsName) {
               iconName = focused ? 'settings' : 'settings-outline';
+
+            } else if (rn === overviewName) {
+              iconName = focused ? 'analytics' : 'analytics-outline';
             }
+
 
             // You can return any component that you like here!
             return <Ionicons name={iconName} size={size} color={color} />;
@@ -58,6 +64,7 @@ function MainContainer() {
         <Tab.Screen name={homeName} component={HomeScreen} />
         <Tab.Screen name={listsName} component={ListsScreen} />
         <Tab.Screen name={productsName} component={ProductsScreen} />
+        <Tab.Screen name={overviewName} component={OverviewScreen} />
 
       </Tab.Navigator>
     </NavigationContainer>

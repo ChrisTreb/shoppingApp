@@ -1,24 +1,11 @@
 import * as React from 'react';
-import { SafeAreaView, View, Text, TextInput, Modal, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert } from 'react-native';
+import { SafeAreaView, View, Text, TextInput, Modal, FlatList, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import { useEffect, useState } from 'react';
 import SearchBar from "react-native-dynamic-search-bar";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
-// DEV - Drop table
-/*
-db.transaction(
-  tx => {
-    tx.executeSql(`DROP TABLE IF EXISTS productsLists`, [], (trans, result) => {
-      console.log("table dropped successfully => " + JSON.stringify(result));
-    },
-      error => {
-        console.log("error on dropping table productsList : " + error.message);
-      });
-  }
-);
-*/
 
 // DEV - Create table for lists storage
 db.transaction(
@@ -463,6 +450,7 @@ export default function ListsScreen({ navigation }) {
         onChangeText={(text) => searchFilter(text)}
         onClearPress={() => clearFilter()}
       ></SearchBar>
+      
       <FlatList
         data={products}
         renderItem={renderItem}

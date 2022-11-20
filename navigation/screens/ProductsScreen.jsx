@@ -1,24 +1,11 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, StatusBar, Alert, Modal, TextInput } from 'react-native';
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert, Modal, TextInput } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
-/*
-// DEV - Drop table
-db.transaction(
-  tx => {
-    tx.executeSql(`DROP TABLE IF EXISTS products`, [], (trans, result) => {
-      console.log("table products dropped successfully => " + JSON.stringify(result));
-    },
-      error => {
-        console.log("error on dropping table : " + error.message);
-      });
-  }
-);
-*/
 
 // DEV - Create table
 db.transaction(
@@ -31,7 +18,7 @@ db.transaction(
       lastOrder TIMESTAMP,
       numOrdered INTEGER DEFAULT 0)`,
       [], (trans, result) => {
-        //console.log("table created successfully => " + JSON.stringify(result));
+        console.log("table created products successfully !");
       },
       error => {
         console.log("error on creating table products : " + error.message);
