@@ -190,7 +190,7 @@ export default function ProductsScreen({ navigation }) {
     container: {
       width: '90%',
       flex: 1,
-      paddingTop: StatusBar.currentHeight,
+      paddingTop: 10,
       marginHorizontal: 16
     },
     item: {
@@ -203,7 +203,17 @@ export default function ProductsScreen({ navigation }) {
       backgroundColor: "#fff",
       padding: 10,
       marginVertical: 5,
-      borderRadius: 5
+      borderRadius: 5,
+      borderWidth: 1,
+      borderColor: "#D3D3D3",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.22,
+      shadowRadius: 2.22,
+      elevation: 3
     },
     title: {
       width: "100%",

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal } from 'react-native';
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, Alert, StatusBar } from 'react-native';
 import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
@@ -11,6 +11,7 @@ export default function HomeScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(true);
   var [list, setList] = useState("");
   var [products, setProducts] = useState([]);
+  var [displayedProducts, setDisplayedProducts] = useState([]);
 
   useEffect(() => {
     // Reload list each time we load the page
@@ -74,10 +75,42 @@ export default function HomeScreen({ navigation }) {
     return imgPath;
   }
 
+  // Alert on product click => Add to cart, remove from current display screen
+  const addToCart = (item) =>
+    Alert.alert(
+      "ADD TO CART",
+      "Remove this from display ? " + item.name,
+      [
+        {
+          text: "No",
+          onPress: () => console.log("No, " + item.name),
+          style: "cancel"
+        },
+        {
+          text: "Yes",
+          onPress: () => checkItem(item)
+        }
+      ],
+      {
+        cancelable: false,
+      }
+    );
+
+  // Check item in list
+  const checkItem = (item) => {
+    if (item != "" || item != undefined) {
+      displayedProducts = products.filter((el) => el.id != item.id);
+      setDisplayedProducts(displayedProducts);
+      setProducts(displayedProducts);
+    } else {
+      setProducts(products);
+    }
+  }
+
   const Item = ({ item }) => {
     if (item) {
       return (
-        <TouchableOpacity onPress={() => console.log(item.id)} style={styles.item}>
+        <TouchableOpacity onPress={() => addToCart(item)} style={styles.item}>
           <Image style={styles.productImg} source={setImage(item.type)} />
           <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
         </TouchableOpacity >
@@ -121,7 +154,17 @@ export default function HomeScreen({ navigation }) {
       backgroundColor: "#fff",
       padding: 10,
       marginVertical: 5,
-      borderRadius: 5
+      borderRadius: 5,
+      borderWidth: 1,
+      borderColor: "#D3D3D3",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.22,
+      shadowRadius: 2.22,
+      elevation: 3
     },
     title: {
       width: "100%",
@@ -183,11 +226,11 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-
+      <StatusBar />
       <View style={styles.listHeader}>
-        { list.listName ?
+        {list.listName ?
           <Text style={styles.listHeaderText}>{list.listName} - {list.createdAt}</Text>
-          : 
+          :
           <Text style={styles.listHeaderText}>No Active List</Text>
         }
       </View>
