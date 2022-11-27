@@ -26,7 +26,7 @@ export default function HomeScreen({ navigation }) {
   const getCurrentListProducts = () => {
     db.transaction(
       tx => {
-        tx.executeSql(`SELECT * FROM products WHERE inCurrentList = 1`, [], (trans, result) => {
+        tx.executeSql(`SELECT * FROM products WHERE inCurrentList = 1 ORDER BY type DESC`, [], (trans, result) => {
           var len = result.rows.length;
           if (len > 0) {
             products = result.rows._array;
@@ -138,8 +138,9 @@ export default function HomeScreen({ navigation }) {
       marginHorizontal: 16
     },
     listHeader: {
+      position: "absolute",
       flex: 1,
-      height: 50,
+      height: 60,
       maxHeight: 60,
       paddingVertical: 10,
       justifyContent: "center",
@@ -148,8 +149,7 @@ export default function HomeScreen({ navigation }) {
     listHeaderText: {
       fontSize: 14,
       marginLeft: 10,
-      fontWeight: "bold",
-      marginTop: 20
+      fontWeight: "bold"
     },
     emptyListContainer: {
       flex: 1,
@@ -168,6 +168,9 @@ export default function HomeScreen({ navigation }) {
       fontSize: 20,
       fontWeight: "bold",
       paddingHorizontal: 50
+    },
+    flatlist: {
+      marginTop: 60
     },
     item: {
       flex: 1,
@@ -262,7 +265,7 @@ export default function HomeScreen({ navigation }) {
 
       {
         list && products ?
-          <FlatList
+          <FlatList style={styles.flatlist}
             data={products}
             renderItem={renderItem}
             keyExtractor={(item) => item ? item.id : 0}

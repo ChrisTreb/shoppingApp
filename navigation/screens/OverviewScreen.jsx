@@ -21,7 +21,7 @@ export default function OverviewScreen({ navigation }) {
   const getLists = () => {
     db.transaction(
       tx => {
-        tx.executeSql(`SELECT * FROM productsLists`, [], (trans, result) => {
+        tx.executeSql(`SELECT * FROM productsLists ORDER BY id`, [], (trans, result) => {
           var len = result.rows.length;
           if (len > 0) {
             lists = result.rows._array;
@@ -121,12 +121,64 @@ export default function OverviewScreen({ navigation }) {
       }
     );
   }
-  
+
+  const Item = ({ item }) => {
+    if (item) {
+      return (
+        <TouchableOpacity style={styles.item}>
+          <Text style={styles.title} activeOpacity={0.8}>{item.listName} - {item.createdAt}</Text>
+        </TouchableOpacity >
+      )
+    }
+  };
+
+  const renderItem = ({ item }) => {
+    if (item) {
+      return (
+        <Item style={styles.title} item={item} />
+      )
+    }
+  };
+
   const styles = StyleSheet.create({
     container: {
       width: '90%',
       flex: 1,
       marginHorizontal: 16
+    },
+    listContainer: {
+      marginVertical: 30
+    },
+    listContainerText: {
+      fontSize: 20,
+      marginVertical: 10
+    },
+    item: {
+      flex: 1,
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      Height: 50,
+      fontSize: 16,
+      backgroundColor: "#fff",
+      padding: 10,
+      marginVertical: 5,
+      borderRadius: 5,
+      borderWidth: 1,
+      borderColor: "#D3D3D3",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.22,
+      shadowRadius: 2.22,
+      elevation: 3
+    },
+    title: {
+      width: "100%",
+      color: "#696969",
+      fontSize: 20
     },
     buttonContainer: {
       maxHeight: 90,
@@ -151,6 +203,22 @@ export default function OverviewScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={styles.listContainer}>
+        <Text style={styles.listContainerText}>Lists storage</Text>
+        {
+          lists ?
+            <FlatList
+              data={lists}
+              renderItem={renderItem}
+              keyExtractor={(item) => item ? item.id : 0}
+            />
+            :
+            <View>
+              <Text>No list in database !</Text>
+            </View>
+        }
+      </View>
+
       <View style={styles.buttonContainer}>
         <Text style={styles.buttonText}>Caution, these actions are irreversible ! </Text>
         <Pressable style={styles.button} onPress={() => alertDropProductsTable()} >
