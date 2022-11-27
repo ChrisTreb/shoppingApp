@@ -16,8 +16,7 @@ export default function HomeScreen({ navigation }) {
   useEffect(() => {
     // Reload list each time we load the page
     const unsubscribe = navigation.addListener('focus', () => {
-      getCurrentListProducts();
-      getCurrentListData();
+      [getCurrentListData(), getCurrentListProducts()]
     });
     return unsubscribe;
   }, [navigation]);
@@ -44,6 +43,25 @@ export default function HomeScreen({ navigation }) {
   }
 
   const getCurrentListData = () => {
+    
+    // DEV - Create table for lists storage
+    db.transaction(
+      tx => {
+        tx.executeSql(`CREATE TABLE IF NOT EXISTS productsLists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        listName VARCHAR(50),
+        createdAt TIMESTAMP,
+        products VARCHAR(255),
+        currentList INTEGER(1) DEFAULT 0)`,
+          [], (trans, result) => {
+            console.log("table created successfully => " + JSON.stringify(result));
+          },
+          error => {
+            console.log("error on creating table productsLists : " + error.message);
+          });
+      }
+    );
+
     db.transaction(
       tx => {
         tx.executeSql(`SELECT * FROM productsLists WHERE currentList = 1`, [], (trans, result) => {
@@ -54,8 +72,8 @@ export default function HomeScreen({ navigation }) {
             setList(list);
           } else {
             console.log('CurrentList is empty... ');
-            setList(list);
-            products = null
+            setList({});
+            products = [];
             setProducts(products);
             setDisplayedProducts(displayedProducts);
           }

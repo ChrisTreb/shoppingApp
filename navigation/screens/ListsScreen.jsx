@@ -39,8 +39,7 @@ export default function ListsScreen({ navigation }) {
   useEffect(() => {
     // Reload list each time we load the page
     const unsubscribe = navigation.addListener('focus', () => {
-      getData();
-      getListsData();
+      [getData(), getListsData()]
     });
     return unsubscribe;
   }, [navigation]);

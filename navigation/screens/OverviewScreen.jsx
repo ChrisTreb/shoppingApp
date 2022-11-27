@@ -76,6 +76,8 @@ export default function OverviewScreen({ navigation }) {
           });
       }
     );
+
+    setLists([]);
   }
 
   // Alert Drop products table
@@ -104,7 +106,7 @@ export default function OverviewScreen({ navigation }) {
   const alertDropListsTable = () => {
     Alert.alert(
       "CAUTION !",
-      "You're going to delete all your lits in database",
+      "You're going to delete all your lists in database",
       [
         {
           text: "Cancel",
@@ -150,6 +152,7 @@ export default function OverviewScreen({ navigation }) {
       marginVertical: 30
     },
     listContainerText: {
+      minHeight: 20,
       fontSize: 20,
       marginVertical: 10
     },
@@ -212,10 +215,7 @@ export default function OverviewScreen({ navigation }) {
               renderItem={renderItem}
               keyExtractor={(item) => item ? item.id : 0}
             />
-            :
-            <View>
-              <Text>No list in database !</Text>
-            </View>
+            : null
         }
       </View>
 
