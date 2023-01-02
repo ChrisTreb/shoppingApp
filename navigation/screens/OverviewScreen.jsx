@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Alert, Pressable } from 'react-native';
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Pressable } from 'react-native';
 import database from '../../database/functions/DatabaseConnect';
+import getProductsFromList from '../../lists/functions/GetProductsFromList';
 
 const db = database;
 
@@ -29,6 +30,7 @@ export default function OverviewScreen({ navigation }) {
             setLists(lists);
           } else {
             console.log('No list in DB ! ');
+            dropTableLists(); // Drop the table => To be sure no list is in cache somewhere...
             setLists(lists);
           }
         });
@@ -54,17 +56,7 @@ export default function OverviewScreen({ navigation }) {
   // Drop table lists
   const dropTableLists = () => {
     // Update all products inCurrentList before creating new list
-    db.transaction(
-      tx => {
-        tx.executeSql(`UPDATE products SET inCurrentList = 0 WHERE inCurrentList = 1`,
-          [], (trans, result) => {
-            console.log("Products updated in DB set inCurrentList = 0 !");
-          },
-          error => {
-            console.log("error updating products : " + error.message);
-          });
-      }
-    );
+    resetCurrentlistProducts();
 
     db.transaction(
       tx => {
@@ -79,6 +71,79 @@ export default function OverviewScreen({ navigation }) {
 
     setLists([]);
   }
+
+  // Reset products in currentList
+  const resetCurrentlistProducts = () => {
+    db.transaction(
+      tx => {
+        tx.executeSql(`UPDATE products SET inCurrentList = 0 WHERE inCurrentList = 1`,
+          [], (trans, result) => {
+            console.log("Products updated in DB set inCurrentList = 0 !");
+          },
+          error => {
+            console.log("error updating products : " + error.message);
+          });
+      }
+    );
+  }
+
+  // Switch list
+  const switchList = (list) => {
+    //TODO
+    console.log("switchList not implemented yet...\n" + "Switching to list id : " + list.id);
+
+    // Reset all products in DB
+    resetCurrentlistProducts();
+    console.log("No product in list !");
+
+    db.transaction(
+      tx => {
+        tx.executeSql(`UPDATE productsLists SET currentList = 0 WHERE currentList = 1`,
+          [], (trans, result) => {
+            console.log("Update OK currentList = 0 where was 1 !");
+          },
+          error => {
+            console.log("error updating productsLists : " + error.message);
+          });
+      }
+    );
+
+    db.transaction(
+      tx => {
+        tx.executeSql(`UPDATE productsLists SET currentList = 1 WHERE id = ` + list.id,
+          [], (trans, result) => {
+            console.log("Switched to list id " + list.id + "!");
+          },
+          error => {
+            console.log("error updating productsLists : " + error.message);
+          });
+      }
+    );
+
+    if (list.products !== null) {
+
+      console.log("Boring we gotta parse that... Use function GetProductsFromList");
+      let arrProducts = getProductsFromList(list.products);
+      console.log(arrProducts);
+
+      // For each products in new list set product inCurrentList = 1
+      for (let i = 0; i < arrProducts.length; i++) {
+        // Update each product inCurrentList = 1
+        db.transaction(
+          tx => {
+            tx.executeSql(`UPDATE products SET inCurrentList = 1 WHERE id = ` + arrProducts[i].id,
+              [], (trans, result) => {
+                console.log("Updated product  inCurrentList = 1" + arrProducts[i].id + " - " + arrProducts[i].name + "!");
+              },
+              error => {
+                console.log("error updating products : " + error.message);
+              });
+          }
+        );
+      }
+    }
+  }
+
 
   // Alert Drop products table
   const alertDropProductsTable = () => {
@@ -124,11 +189,34 @@ export default function OverviewScreen({ navigation }) {
     );
   }
 
+  // Alert set this list as current list
+  const alertSetCurrentList = (item) => {
+    Alert.alert(
+      "Set \"" + item.listName + "\" as current list ?",
+      "This list will be use as current list, do you agree ?\n" + item.products,
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Keep this list touched "),
+          style: "cancel"
+        },
+        {
+          text: "Yes, use this",
+          onPress: () => switchList(item),
+        }
+      ],
+      {
+        cancelable: false,
+      }
+    );
+  }
+
+  // List Items
   const Item = ({ item }) => {
     if (item) {
       return (
-        <TouchableOpacity style={styles.item}>
-          <Text style={styles.title} activeOpacity={0.8}>{item.listName} - {item.createdAt}</Text>
+        <TouchableOpacity style={styles.item} onPress={() => alertSetCurrentList(item)}>
+          <Text style={styles.title} activeOpacity={0.8}>ID : {item.id} - {item.listName} - {item.createdAt}</Text>
         </TouchableOpacity >
       )
     }
@@ -142,6 +230,7 @@ export default function OverviewScreen({ navigation }) {
     }
   };
 
+  // CSS
   const styles = StyleSheet.create({
     container: {
       width: '90%',
@@ -149,7 +238,8 @@ export default function OverviewScreen({ navigation }) {
       marginHorizontal: 16
     },
     listContainer: {
-      marginVertical: 30
+      marginVertical: 30,
+      maxHeight: 400
     },
     listContainerText: {
       minHeight: 20,
@@ -204,6 +294,7 @@ export default function OverviewScreen({ navigation }) {
     }
   });
 
+  // View
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.listContainer}>
