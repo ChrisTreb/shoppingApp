@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, Alert, StatusBar } from 'react-native';
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, Alert, StatusBar, Button} from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
@@ -8,7 +9,8 @@ const db = database;
 export default function HomeScreen({ navigation }) {
 
   const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
-  const [modalVisible, setModalVisible] = useState(true);
+  const [modalHomeVisible, setModalHomeVisible] = useState(true);
+  const [modalListVisible, setModalListVisible] = useState(false);
   var [list, setList] = useState({});
   var [products, setProducts] = useState([]);
   var [displayedProducts, setDisplayedProducts] = useState([]);
@@ -43,8 +45,8 @@ export default function HomeScreen({ navigation }) {
   }
 
   const getCurrentListData = () => {
-    
-    // DEV - Create table for lists storage
+
+    // Create table for lists storage
     db.transaction(
       tx => {
         tx.executeSql(`CREATE TABLE IF NOT EXISTS productsLists (
@@ -82,6 +84,23 @@ export default function HomeScreen({ navigation }) {
     );
   }
 
+  // Remove item from current list
+  const removeItem = (item) => {
+    db.transaction(
+      tx => {
+        tx.executeSql(`UPDATE products SET inCurrentList = 0 WHERE id = ` + item.id,
+          [], (trans, result) => {
+            console.log("Removed from list - Updated product inCurrentList = 0 => " + item.name + "!");
+          },
+          error => {
+            console.log("error updating products : " + error.message);
+          });
+      }
+    );
+    getCurrentListProducts();
+  }
+
+  // Images displayed in lists
   const setImage = (type) => {
     var imgPath = "";
 
@@ -119,6 +138,27 @@ export default function HomeScreen({ navigation }) {
       }
     );
 
+  // Alert edit list => remove from currentList
+  const AlertRemoveItemFromList = (item) =>
+    Alert.alert(
+      "Remove this item ?",
+      "Do you want to delete from your list ? " + item.name,
+      [
+        {
+          text: "No",
+          onPress: () => console.log("No, " + item.name),
+          style: "cancel"
+        },
+        {
+          text: "Yes, sure !",
+          onPress: () => removeItem(item)
+        }
+      ],
+      {
+        cancelable: false,
+      }
+    );
+
   // Check item in list
   const checkItem = (item) => {
     if (item != "" || item != undefined) {
@@ -130,6 +170,7 @@ export default function HomeScreen({ navigation }) {
     }
   }
 
+  // Items displayed in home list
   const Item = ({ item }) => {
     if (item) {
       return (
@@ -149,6 +190,27 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+  // Items displayed in modal editing list
+  const ModalItem = ({ item }) => {
+    if (item) {
+      return (
+        <TouchableOpacity onPress={() => AlertRemoveItemFromList(item)} style={styles.itemEdit}>
+          <Image style={styles.productImg} source={setImage(item.type)} />
+          <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
+        </TouchableOpacity >
+      )
+    }
+  };
+
+  const renderModalItem = ({ item }) => {
+    if (item) {
+      return (
+        <ModalItem style={styles.title} item={item} />
+      )
+    }
+  };
+
+  // CSS Styles
   const styles = StyleSheet.create({
     container: {
       width: '90%',
@@ -156,16 +218,21 @@ export default function HomeScreen({ navigation }) {
       marginHorizontal: 16
     },
     listHeader: {
+      width: "100%",
       position: "absolute",
       flex: 1,
       height: 60,
       maxHeight: 60,
       paddingVertical: 10,
-      justifyContent: "center",
-      alignContent: "center"
+      justifyContent: "space-between",
+      alignContent: "center",
+      flexDirection: "row"
+    },
+    btnEdit: {
     },
     listHeaderText: {
       fontSize: 14,
+      marginTop: 12,
       marginLeft: 10,
       fontWeight: "bold"
     },
@@ -212,6 +279,28 @@ export default function HomeScreen({ navigation }) {
       shadowRadius: 2.22,
       elevation: 3
     },
+    itemEdit: {
+      flex: 1,
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      Height: 50,
+      fontSize: 16,
+      backgroundColor: "#fff",
+      padding: 10,
+      marginVertical: 5,
+      borderRadius: 5,
+      borderWidth: 1,
+      borderColor: "#ff6961",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.22,
+      shadowRadius: 2.22,
+      elevation: 3
+    },
     title: {
       width: "100%",
       color: "#696969",
@@ -224,7 +313,7 @@ export default function HomeScreen({ navigation }) {
       marginRight: 15,
       borderRadius: 20
     },
-    modalView: {
+    modalHomeView: {
       backgroundColor: "#000",
       height: "100%",
       padding: 35,
@@ -238,12 +327,32 @@ export default function HomeScreen({ navigation }) {
       shadowRadius: 4,
       elevation: 5
     },
-    modalText: {
+    modalHomeText: {
       marginTop: 150,
       paddingBottom: 30,
       fontSize: 25,
       fontWeight: 'bold',
       marginBottom: 15,
+      textAlign: "center"
+    },
+    modalListView: {
+      backgroundColor: "#000",
+      height: "100%",
+      padding: 10,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5
+    },
+    modalListText: {
+      marginTop: 30,
+      fontSize: 24,
+      fontWeight: 'bold',
       textAlign: "center"
     },
     homeImg: {
@@ -267,7 +376,27 @@ export default function HomeScreen({ navigation }) {
       color: '#fff',
       fontWeight: 'bold',
       fontSize: 20
-    }
+    },
+    btnCloseEdit: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#1E90FF',
+      width: 70,
+      height: 70,
+      position: 'absolute',
+      bottom: 20,
+      right: 20,
+      marginBottom: 20,
+      borderRadius: 35
+    },
+    closeBtnEditText: {
+      fontSize: 48
+    },
+    flatlistEdit: {
+      maxWidth: "100%",
+      marginTop: 15
+    },
   });
 
   return (
@@ -279,8 +408,23 @@ export default function HomeScreen({ navigation }) {
           :
           <Text style={styles.listHeaderText}>No Active List</Text>
         }
+        {list.listName ?
+          <Button
+            style={styles.btnEdit}
+            onPress={() => {
+              setModalListVisible(!modalListVisible), console.log("Opening edit modal !")
+            }}
+            title="Edit list"
+          />
+          :
+          null
+        }
       </View>
 
+      {/* 
+      If there's a list with product display list 
+      Else display cat with empty list message
+      */}
       {
         list && products ?
           <FlatList style={styles.flatlist}
@@ -295,23 +439,54 @@ export default function HomeScreen({ navigation }) {
           </View>
       }
 
-      <Modal style={styles.modal}
+      {/* MODAL HOME START */}
+      <Modal style={styles.modalHome}
         animationType="fade"
         transparent={true}
-        visible={modalVisible}
+        visible={modalHomeVisible}
         onRequestClose={() => {
-          setModalVisible(!modalVisible);
+          setModalHomeVisible(!modalHomeVisible);
         }}
       >
         <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Hello Shopping App</Text>
+          <View style={styles.modalHomeView}>
+            <Text style={styles.modalHomeText}>Shopping App</Text>
             <Image style={styles.homeImg} source={require('../../img/home/home.png')} />
             <TouchableOpacity style={styles.startButton}
               activeOpacity={0.8}
-              onPress={() => setModalVisible(!modalVisible)}
+              onPress={() => setModalHomeVisible(!modalHomeVisible)}
             >
               <Text style={styles.startButtonText}>Let's go Shopping !</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL LIST EDITING */}
+      <Modal style={styles.modalList}
+        animationType="fade"
+        transparent={true}
+        visible={modalListVisible}
+        onRequestClose={() => {
+          setModalListVisible(!modalListVisible);
+        }}
+      >
+        <View>
+          <View style={styles.modalListView}>
+            <Text style={styles.modalListText}>List editing</Text>
+
+            <FlatList style={styles.flatlistEdit}
+              data={products}
+              renderItem={renderModalItem}
+              keyExtractor={(item) => item ? item.id : 0}
+            />
+
+            <TouchableOpacity style={styles.btnCloseEdit}
+              activeOpacity={0.8}
+              onPress={() => setModalListVisible(!modalListVisible)}
+            >
+              {/*<Text style={styles.closeBtnEditText}>Close</Text> */}
+              <Ionicons style={styles.closeBtnEditText} name="close-circle-outline" />
             </TouchableOpacity>
           </View>
         </View>

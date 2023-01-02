@@ -89,8 +89,7 @@ export default function OverviewScreen({ navigation }) {
 
   // Switch list
   const switchList = (list) => {
-    //TODO
-    console.log("switchList not implemented yet...\n" + "Switching to list id : " + list.id);
+    console.log("Switching to list id : " + list.id);
 
     // Reset all products in DB
     resetCurrentlistProducts();
@@ -121,8 +120,6 @@ export default function OverviewScreen({ navigation }) {
     );
 
     if (list.products !== null) {
-
-      console.log("Boring we gotta parse that... Use function GetProductsFromList");
       let arrProducts = getProductsFromList(list.products);
       console.log(arrProducts);
 
@@ -193,7 +190,7 @@ export default function OverviewScreen({ navigation }) {
   const alertSetCurrentList = (item) => {
     Alert.alert(
       "Set \"" + item.listName + "\" as current list ?",
-      "This list will be use as current list, do you agree ?\n" + item.products,
+      "Do you agree ?",
       [
         {
           text: "Cancel",
