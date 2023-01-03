@@ -133,7 +133,7 @@ export default function ListsScreen({ navigation }) {
     setModalVisible(false);
     setListProducts(""); // Set empty list on create new
 
-    if (name != undefined && name != "") {
+    if (name != undefined && name != "" && name.length <= 24) {
       console.log("Inserting new list in db ! " + name);
 
       // Update currentList column before creating new list
@@ -184,7 +184,7 @@ export default function ListsScreen({ navigation }) {
       // If required inputs are not filled => Display alert
       Alert.alert(
         "MISSING INFO",
-        "List name is required ! Be sure to fill this data.",
+        "List name is required ! Be sure to fill this data.\nName length is limited to 24 characters",
         [
           {
             text: "OK, sorry...",
@@ -437,6 +437,12 @@ export default function ListsScreen({ navigation }) {
       margin: 12,
       borderWidth: 1,
       padding: 10
+    },
+    inputHelper: {
+      color: '#ff6961',
+      width: '100%',
+      fontSize: 12,
+      textAlign: 'left'
     }
   });
 
@@ -481,6 +487,7 @@ export default function ListsScreen({ navigation }) {
               onChangeText={onChangeName}
               value={nameForm}
             ></TextInput>
+            <Text style={styles.inputHelper}>List name max length 24 characters</Text>
 
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
