@@ -427,6 +427,7 @@ export default function ListsScreen({ navigation }) {
       backgroundColor: '#1E90FF'
     },
     textStyle: {
+      color: '#fff',
       fontSize: 16
     },
     input: {
@@ -464,7 +465,7 @@ export default function ListsScreen({ navigation }) {
 
       <Modal
         animationType="slide"
-        transparent={true}
+        transparent={false}
         visible={modalVisible}
         onRequestClose={() => {
           setModalVisible(!modalVisible);

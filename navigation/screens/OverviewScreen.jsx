@@ -231,13 +231,13 @@ export default function OverviewScreen({ navigation }) {
           <Text onPress={() => alertSetCurrentList(item)} style={styles.title} activeOpacity={0.8}>{item.listName} - {item.createdAt}</Text>
           {
             item.products ?
-            <Button 
-            style={styles.btnBrowseList} title='Browse'
-            onPress={() => {setModalVisible(!modalVisible), setListProducts(item)}} 
-            />
-            : <Ionicons style={styles.emptyListIcon} name='eye-off-outline' />
+              <Button
+                style={styles.btnBrowseList} title='Browse'
+                onPress={() => { setModalVisible(!modalVisible), setListProducts(item) }}
+              />
+              : <Ionicons style={styles.emptyListIcon} name='eye-off-outline' />
           }
-          
+
         </TouchableOpacity >
       )
     }
@@ -317,7 +317,7 @@ export default function OverviewScreen({ navigation }) {
     btnBrowseList: {
       fontSize: 14,
       backgroundColor: '#1E90FF',
-      paddingRight: 10 
+      paddingRight: 10
     },
     modalList: {
       height: '100%',
@@ -325,7 +325,6 @@ export default function OverviewScreen({ navigation }) {
       alignItems: "center"
     },
     modalListView: {
-      backgroundColor: "#000",
       height: "100%",
       padding: 10,
       alignItems: "center",
@@ -343,7 +342,8 @@ export default function OverviewScreen({ navigation }) {
       fontSize: 24,
       fontWeight: 'bold',
       textAlign: "center"
-    },btnCloseEdit: {
+    },
+    btnCloseEdit: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
@@ -357,13 +357,14 @@ export default function OverviewScreen({ navigation }) {
       borderRadius: 35
     },
     closeBtnEditText: {
+      color: '#fff',
       fontSize: 48
     },
     modalProductsList: {
       fontSize: 20,
       marginTop: 30
     },
-    emptyListIcon : {
+    emptyListIcon: {
       fontSize: 28,
       marginRight: 15
     }
@@ -398,7 +399,7 @@ export default function OverviewScreen({ navigation }) {
       {/* MODAL BROWSE LIST */}
       <Modal style={styles.modalList}
         animationType="fade"
-        transparent={true}
+        transparent={false}
         visible={modalVisible}
         onRequestClose={() => {
           setModalVisible(!modalVisible);
@@ -406,17 +407,17 @@ export default function OverviewScreen({ navigation }) {
       >
         <ScrollView style={styles.scrollView}>
           <View style={styles.modalListView}>
-            <Text style={styles.modalListText}>Content of {listName}</Text>
+            <Text style={styles.modalListText}>List name : {listName}</Text>
             <Text style={styles.modalProductsList}>{products}</Text>
-
-            <TouchableOpacity style={styles.btnCloseEdit}
-              activeOpacity={0.8}
-              onPress={() => setModalVisible(!modalVisible)}
-            >
-              <Ionicons style={styles.closeBtnEditText} name="close-circle-outline" />
-            </TouchableOpacity>
           </View>
         </ScrollView>
+
+        <TouchableOpacity style={styles.btnCloseEdit}
+          activeOpacity={0.8}
+          onPress={() => setModalVisible(!modalVisible)}
+        >
+          <Ionicons style={styles.closeBtnEditText} name="close-circle-outline" />
+        </TouchableOpacity>
       </Modal>
 
     </SafeAreaView>

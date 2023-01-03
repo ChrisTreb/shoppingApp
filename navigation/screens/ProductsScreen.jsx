@@ -313,7 +313,7 @@ export default function ProductsScreen({ navigation }) {
 
       <Modal
         animationType="slide"
-        transparent={true}
+        transparent={false}
         visible={modalVisible}
         onRequestClose={() => {
           setModalVisible(!modalVisible);

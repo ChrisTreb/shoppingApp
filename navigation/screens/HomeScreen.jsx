@@ -314,7 +314,6 @@ export default function HomeScreen({ navigation }) {
       borderRadius: 20
     },
     modalHomeView: {
-      backgroundColor: "#000",
       height: "100%",
       padding: 35,
       alignItems: "center",
@@ -336,7 +335,6 @@ export default function HomeScreen({ navigation }) {
       textAlign: "center"
     },
     modalListView: {
-      backgroundColor: "#000",
       height: "100%",
       padding: 10,
       alignItems: "center",
@@ -391,7 +389,8 @@ export default function HomeScreen({ navigation }) {
       borderRadius: 35
     },
     closeBtnEditText: {
-      fontSize: 48
+      fontSize: 48,
+      color: '#fff'
     },
     flatlistEdit: {
       maxWidth: "100%",
@@ -413,7 +412,7 @@ export default function HomeScreen({ navigation }) {
             style={styles.btnEdit}
             onPress={() => {
               setModalListVisible(!modalListVisible),
-              console.log("Opening edit modal !")
+                console.log("Opening edit modal !")
             }}
             title="Edit list"
           />
@@ -443,7 +442,7 @@ export default function HomeScreen({ navigation }) {
       {/* MODAL HOME START */}
       <Modal style={styles.modalHome}
         animationType="fade"
-        transparent={true}
+        transparent={false}
         visible={modalHomeVisible}
         onRequestClose={() => {
           setModalHomeVisible(!modalHomeVisible);
@@ -466,7 +465,7 @@ export default function HomeScreen({ navigation }) {
       {/* MODAL LIST EDITING */}
       <Modal style={styles.modalList}
         animationType="fade"
-        transparent={true}
+        transparent={false}
         visible={modalListVisible}
         onRequestClose={() => {
           setModalListVisible(!modalListVisible);
@@ -481,15 +480,16 @@ export default function HomeScreen({ navigation }) {
               renderItem={renderModalItem}
               keyExtractor={(item) => item ? item.id : 0}
             />
-
-            <TouchableOpacity style={styles.btnCloseEdit}
-              activeOpacity={0.8}
-              onPress={() => setModalListVisible(!modalListVisible)}
-            >
-              <Ionicons style={styles.closeBtnEditText} name="close-circle-outline" />
-            </TouchableOpacity>
           </View>
         </View>
+
+        <TouchableOpacity style={styles.btnCloseEdit}
+          activeOpacity={0.8}
+          onPress={() => setModalListVisible(!modalListVisible)}
+        >
+          <Ionicons style={styles.closeBtnEditText} name="close-circle-outline" />
+        </TouchableOpacity>
+
       </Modal>
 
     </SafeAreaView>
