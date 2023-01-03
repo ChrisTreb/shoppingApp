@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -20,6 +21,12 @@ const Tab = createBottomTabNavigator();
 function MainContainer() {
   return (
     <NavigationContainer>
+
+      <StatusBar
+        animated={true}
+        backgroundColor='#1E90FF'
+      />
+
       <Tab.Navigator
         initialRouteName={homeName}
         screenOptions={({ route }) => ({

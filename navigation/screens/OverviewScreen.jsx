@@ -223,6 +223,24 @@ export default function OverviewScreen({ navigation }) {
     );
   }
 
+  // Alert when list is empty
+  const alertEmptyList = (item) => {
+    Alert.alert(
+      "This list \"" + item.listName + "\" is empty",
+      "Nothing here...",
+      [
+        {
+          text: "Close",
+          onPress: () => console.log("Empty list alert closed"),
+          style: "cancel"
+        }
+      ],
+      {
+        cancelable: true,
+      }
+    );
+  }
+
   // List Items
   const Item = ({ item }) => {
     if (item) {
@@ -231,11 +249,19 @@ export default function OverviewScreen({ navigation }) {
           <Text onPress={() => alertSetCurrentList(item)} style={styles.title} activeOpacity={0.8}>{item.listName} - {item.createdAt}</Text>
           {
             item.products ?
-              <Button
-                style={styles.btnBrowseList} title='Browse'
+              <TouchableOpacity
+                style={styles.btnBrowseList}
                 onPress={() => { setModalVisible(!modalVisible), setListProducts(item) }}
-              />
-              : <Ionicons style={styles.emptyListIcon} name='eye-off-outline' />
+              >
+                <Ionicons style={styles.icon} name='open-outline' />
+              </TouchableOpacity>
+              :
+              <TouchableOpacity
+                style={styles.btnBrowseList}
+                onPress={() => alertEmptyList(item)}
+                >
+                <Ionicons style={styles.icon} name='eye-off-outline' />
+              </TouchableOpacity>
           }
 
         </TouchableOpacity >
@@ -254,13 +280,15 @@ export default function OverviewScreen({ navigation }) {
   // CSS
   const styles = StyleSheet.create({
     container: {
+      flex: 1,
+      justifyContent: 'center',
       width: '90%',
       flex: 1,
       marginHorizontal: 16
     },
     listContainer: {
-      marginVertical: 30,
-      maxHeight: 400
+      marginVertical: 15,
+      maxHeight: 500
     },
     listContainerText: {
       minHeight: 20,
@@ -296,28 +324,31 @@ export default function OverviewScreen({ navigation }) {
       fontSize: 14
     },
     buttonContainer: {
-      maxHeight: 90,
-      marginTop: 50,
+      width: '100%',
+      maxHeight: 60,
+      paddingHorizontal: 10,
       flex: 1,
+      flexDirection: 'row',
       alignItems: "center",
       justifyContent: "center"
     },
     button: {
-      height: 50,
+      height: 40,
       backgroundColor: "#ff6961",
-      width: "90%",
+      width: "50%",
       padding: 10,
       margin: 10,
       borderRadius: 5
     },
     buttonText: {
       textAlign: "center",
-      fontSize: 18
+      fontSize: 14,
+      color: '#fff'
     },
     btnBrowseList: {
-      fontSize: 14,
-      backgroundColor: '#1E90FF',
-      paddingRight: 10
+      borderRadius: 25,
+      padding: 10,
+      backgroundColor: '#1E90FF'
     },
     modalList: {
       height: '100%',
@@ -364,9 +395,9 @@ export default function OverviewScreen({ navigation }) {
       fontSize: 20,
       marginTop: 30
     },
-    emptyListIcon: {
-      fontSize: 28,
-      marginRight: 15
+    icon: {
+      fontSize: 20,
+      color: '#fff'
     }
   });
 
@@ -386,13 +417,13 @@ export default function OverviewScreen({ navigation }) {
         }
       </View>
 
+      <Text><Ionicons style={styles.icon} name="warning-outline" /> Caution, these actions are irreversible !</Text>
       <View style={styles.buttonContainer}>
-        <Text style={styles.buttonText}>Caution, these actions are irreversible ! </Text>
         <Pressable style={styles.button} onPress={() => alertDropProductsTable()} >
-          <Text style={styles.buttonText}>Drop table products</Text>
+          <Text style={styles.buttonText}>Drop products</Text>
         </Pressable>
         <Pressable style={styles.button} onPress={() => alertDropListsTable()} >
-          <Text style={styles.buttonText}>Drop table lists</Text>
+          <Text style={styles.buttonText}>Drop lists</Text>
         </Pressable>
       </View>
 

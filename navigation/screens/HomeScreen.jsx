@@ -328,8 +328,8 @@ export default function HomeScreen({ navigation }) {
     },
     modalHomeText: {
       marginTop: 150,
-      paddingBottom: 30,
-      fontSize: 25,
+      paddingBottom: 15,
+      fontSize: 50,
       fontWeight: 'bold',
       marginBottom: 15,
       textAlign: "center"
@@ -361,19 +361,17 @@ export default function HomeScreen({ navigation }) {
       marginBottom: 50
     },
     startButton: {
-      maxHeight: 60,
-      paddingVertical: 10,
       backgroundColor: "#1E90FF",
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      width: '90%',
-      borderRadius: 5
+      width: 90,
+      maxHeight: 90,
+      borderRadius: 45
     },
-    startButtonText: {
-      color: '#fff',
-      fontWeight: 'bold',
-      fontSize: 20
+    startIcon: {
+      fontSize: 60,
+      color: '#fff'
     },
     btnCloseEdit: {
       flex: 1,
@@ -389,6 +387,7 @@ export default function HomeScreen({ navigation }) {
       borderRadius: 35
     },
     closeBtnEditText: {
+      marginLeft: 3,
       fontSize: 48,
       color: '#fff'
     },
@@ -451,12 +450,12 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.centeredView}>
           <View style={styles.modalHomeView}>
             <Text style={styles.modalHomeText}>Shopping App</Text>
-            <Image style={styles.homeImg} source={require('../../img/home/home.png')} />
+            <Image style={styles.homeImg} source={require('../../img/home/shopping.gif')} />
             <TouchableOpacity style={styles.startButton}
               activeOpacity={0.8}
               onPress={() => setModalHomeVisible(!modalHomeVisible)}
             >
-              <Text style={styles.startButtonText}>Let's go Shopping !</Text>
+              <Ionicons style={styles.startIcon} name='navigate-circle' />
             </TouchableOpacity>
           </View>
         </View>
@@ -487,7 +486,7 @@ export default function HomeScreen({ navigation }) {
           activeOpacity={0.8}
           onPress={() => setModalListVisible(!modalListVisible)}
         >
-          <Ionicons style={styles.closeBtnEditText} name="close-circle-outline" />
+          <Ionicons style={styles.closeBtnEditText} name="close-circle" />
         </TouchableOpacity>
 
       </Modal>

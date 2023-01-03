@@ -363,7 +363,7 @@ export default function ListsScreen({ navigation }) {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#483D8B',
+      backgroundColor: '#4d2efc',
       width: 70,
       height: 70,
       position: 'absolute',
@@ -373,6 +373,7 @@ export default function ListsScreen({ navigation }) {
       borderRadius: 35
     },
     button: {
+      marginLeft: 3,
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
@@ -465,7 +466,7 @@ export default function ListsScreen({ navigation }) {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} activeOpacity={0.8} >
-          <Ionicons style={styles.ionicon} name='add-outline' onPress={() => setModalVisible(true)} />
+          <Ionicons style={styles.ionicon} name='add-circle' onPress={() => setModalVisible(true)} />
         </TouchableOpacity>
       </View>
 

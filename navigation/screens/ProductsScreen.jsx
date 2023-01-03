@@ -228,6 +228,7 @@ export default function ProductsScreen({ navigation }) {
       borderRadius: 35
     },
     button: {
+      marginLeft: 3,
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
