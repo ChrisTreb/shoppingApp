@@ -229,10 +229,15 @@ export default function OverviewScreen({ navigation }) {
       return (
         <TouchableOpacity style={styles.item} >
           <Text onPress={() => alertSetCurrentList(item)} style={styles.title} activeOpacity={0.8}>{item.listName} - {item.createdAt}</Text>
-          <Button 
-          style={styles.btnBrowseList} title='Browse'
-          onPress={() => {setModalVisible(!modalVisible), setListProducts(item)}} 
-          />
+          {
+            item.products ?
+            <Button 
+            style={styles.btnBrowseList} title='Browse'
+            onPress={() => {setModalVisible(!modalVisible), setListProducts(item)}} 
+            />
+            : <Ionicons style={styles.emptyListIcon} name='eye-off-outline' />
+          }
+          
         </TouchableOpacity >
       )
     }
@@ -357,6 +362,10 @@ export default function OverviewScreen({ navigation }) {
     modalProductsList: {
       fontSize: 20,
       marginTop: 30
+    },
+    emptyListIcon : {
+      fontSize: 28,
+      marginRight: 15
     }
   });
 
