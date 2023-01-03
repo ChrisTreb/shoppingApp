@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, Alert, StatusBar, Button} from 'react-native';
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, Alert, StatusBar, Button } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 
@@ -412,7 +412,8 @@ export default function HomeScreen({ navigation }) {
           <Button
             style={styles.btnEdit}
             onPress={() => {
-              setModalListVisible(!modalListVisible), console.log("Opening edit modal !")
+              setModalListVisible(!modalListVisible),
+              console.log("Opening edit modal !")
             }}
             title="Edit list"
           />
@@ -485,7 +486,6 @@ export default function HomeScreen({ navigation }) {
               activeOpacity={0.8}
               onPress={() => setModalListVisible(!modalListVisible)}
             >
-              {/*<Text style={styles.closeBtnEditText}>Close</Text> */}
               <Ionicons style={styles.closeBtnEditText} name="close-circle-outline" />
             </TouchableOpacity>
           </View>

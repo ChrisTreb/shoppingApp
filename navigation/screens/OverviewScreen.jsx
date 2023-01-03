@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Pressable } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Pressable, Button, Modal } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 import getProductsFromList from '../../lists/functions/GetProductsFromList';
 
@@ -9,6 +10,9 @@ const db = database;
 export default function OverviewScreen({ navigation }) {
 
   var [lists, setLists] = useState([]);
+  var [products, setProducts] = useState("");
+  var [listName, setListName] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     // Reload list each time we load the page
@@ -141,6 +145,17 @@ export default function OverviewScreen({ navigation }) {
     }
   }
 
+  // Set Product when calling modal
+  const setListProducts = (list) => {
+    listName = list.listName;
+    setListName(listName);
+    products = getProductsFromList(list.products);
+    let strProducts = "";
+    for (let i = 0; i < products.length; i++) {
+      strProducts += products[i].name + "\n";
+    }
+    setProducts(strProducts);
+  }
 
   // Alert Drop products table
   const alertDropProductsTable = () => {
@@ -212,8 +227,12 @@ export default function OverviewScreen({ navigation }) {
   const Item = ({ item }) => {
     if (item) {
       return (
-        <TouchableOpacity style={styles.item} onPress={() => alertSetCurrentList(item)}>
-          <Text style={styles.title} activeOpacity={0.8}>ID : {item.id} - {item.listName} - {item.createdAt}</Text>
+        <TouchableOpacity style={styles.item} >
+          <Text onPress={() => alertSetCurrentList(item)} style={styles.title} activeOpacity={0.8}>{item.listName} - {item.createdAt}</Text>
+          <Button 
+          style={styles.btnBrowseList} title='Browse'
+          onPress={() => {setModalVisible(!modalVisible), setListProducts(item)}} 
+          />
         </TouchableOpacity >
       )
     }
@@ -251,7 +270,8 @@ export default function OverviewScreen({ navigation }) {
       Height: 50,
       fontSize: 16,
       backgroundColor: "#fff",
-      padding: 10,
+      paddingVertical: 15,
+      paddingHorizontal: 10,
       marginVertical: 5,
       borderRadius: 5,
       borderWidth: 1,
@@ -266,9 +286,9 @@ export default function OverviewScreen({ navigation }) {
       elevation: 3
     },
     title: {
-      width: "100%",
+      width: "80%",
       color: "#696969",
-      fontSize: 20
+      fontSize: 14
     },
     buttonContainer: {
       maxHeight: 90,
@@ -288,6 +308,55 @@ export default function OverviewScreen({ navigation }) {
     buttonText: {
       textAlign: "center",
       fontSize: 18
+    },
+    btnBrowseList: {
+      fontSize: 14,
+      backgroundColor: '#1E90FF',
+      paddingRight: 10 
+    },
+    modalList: {
+      height: '100%',
+      flex: 1,
+      alignItems: "center"
+    },
+    modalListView: {
+      backgroundColor: "#000",
+      height: "100%",
+      padding: 10,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5
+    },
+    modalListText: {
+      marginTop: 30,
+      fontSize: 24,
+      fontWeight: 'bold',
+      textAlign: "center"
+    },btnCloseEdit: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#1E90FF',
+      width: 70,
+      height: 70,
+      position: 'absolute',
+      bottom: 20,
+      right: 20,
+      marginBottom: 20,
+      borderRadius: 35
+    },
+    closeBtnEditText: {
+      fontSize: 48
+    },
+    modalProductsList: {
+      fontSize: 20,
+      marginTop: 30
     }
   });
 
@@ -316,6 +385,31 @@ export default function OverviewScreen({ navigation }) {
           <Text style={styles.buttonText}>Drop table lists</Text>
         </Pressable>
       </View>
+
+      {/* MODAL BROWSE LIST */}
+      <Modal style={styles.modalList}
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.modalListView}>
+            <Text style={styles.modalListText}>Content of {listName}</Text>
+            <Text style={styles.modalProductsList}>{products}</Text>
+
+            <TouchableOpacity style={styles.btnCloseEdit}
+              activeOpacity={0.8}
+              onPress={() => setModalVisible(!modalVisible)}
+            >
+              <Ionicons style={styles.closeBtnEditText} name="close-circle-outline" />
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </Modal>
+
     </SafeAreaView>
   );
 }
