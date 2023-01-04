@@ -261,7 +261,6 @@ export default function HomeScreen({ navigation }) {
       flex: 1,
       alignItems: "center",
       flexDirection: "row",
-      justifyContent: "space-between",
       Height: 50,
       fontSize: 16,
       backgroundColor: "#fff",
@@ -283,7 +282,6 @@ export default function HomeScreen({ navigation }) {
       flex: 1,
       alignItems: "center",
       flexDirection: "row",
-      justifyContent: "space-between",
       Height: 50,
       fontSize: 16,
       backgroundColor: "#fff",
@@ -302,7 +300,7 @@ export default function HomeScreen({ navigation }) {
       elevation: 3
     },
     title: {
-      width: "100%",
+      maxWidth: "80%",
       color: "#696969",
       fontSize: 20
     },

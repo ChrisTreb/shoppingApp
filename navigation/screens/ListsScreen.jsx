@@ -305,6 +305,12 @@ export default function ListsScreen({ navigation }) {
     <TouchableOpacity onPress={() => addToListAlert(item)} style={styles.item}>
       <Image style={styles.productImg} source={setImage(item.type)} />
       <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
+      {
+        item.inCurrentList === 1 ?
+        <Ionicons style={styles.ioniconList} name="checkmark-done-circle-outline" />
+        : null
+      }
+      
     </TouchableOpacity >
   );
 
@@ -323,7 +329,6 @@ export default function ListsScreen({ navigation }) {
       flex: 1,
       alignItems: "center",
       flexDirection: "row",
-      justifyContent: "space-between",
       Height: 50,
       fontSize: 16,
       backgroundColor: "#fff",
@@ -342,9 +347,9 @@ export default function ListsScreen({ navigation }) {
       elevation: 3
     },
     title: {
-      width: "100%",
+      maxWidth: "70%",
       color: "#696969",
-      fontSize: 20
+      fontSize: 16
     },
     productImg: {
       maxWidth: 40,
@@ -382,6 +387,12 @@ export default function ListsScreen({ navigation }) {
     ionicon: {
       color: '#fff',
       fontSize: 40
+    },
+    ioniconList: {
+      position: 'absolute',
+      right: 5,
+      color: '#fff',
+      fontSize: 36
     },
     modalView: {
       marginHorizontal: 20,
