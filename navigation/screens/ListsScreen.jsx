@@ -7,24 +7,6 @@ import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
 
-// DEV - Create table for lists storage
-db.transaction(
-  tx => {
-    tx.executeSql(`CREATE TABLE IF NOT EXISTS productsLists (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        listName VARCHAR(50),
-        createdAt TIMESTAMP,
-        products VARCHAR(255),
-        currentList INTEGER(1) DEFAULT 0)`,
-      [], (trans, result) => {
-        console.log("table created successfully => " + JSON.stringify(result));
-      },
-      error => {
-        console.log("error on creating table productsLists : " + error.message);
-      });
-  }
-);
-
 export default function ListsScreen({ navigation }) {
 
   const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
@@ -46,6 +28,26 @@ export default function ListsScreen({ navigation }) {
 
   // SELECT from products table
   const getData = () => {
+
+    // Create table products if not exists
+    db.transaction(
+      tx => {
+        tx.executeSql(`CREATE TABLE IF NOT EXISTS products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(50) NOT NULL,
+      type VARCHAR(50) NOT NULL,
+      inCurrentList INTEGER(1) DEFAULT 0,
+      lastOrder TIMESTAMP,
+      numOrdered INTEGER DEFAULT 0)`,
+          [], (trans, result) => {
+            console.log("table created products successfully !");
+          },
+          error => {
+            console.log("error on creating table products : " + error.message);
+          });
+      }
+    );
+
     db.transaction(
       tx => {
         tx.executeSql(`SELECT * FROM products ORDER BY type ASC`, [], (trans, result) => {
@@ -58,8 +60,8 @@ export default function ListsScreen({ navigation }) {
             setFilteredData(products);
           } else {
             console.log('Database empty...');
-            setProducts(products);
-            setFilteredData(products);
+            setProducts([]);
+            setFilteredData([]);
           }
         });
       }
@@ -68,6 +70,25 @@ export default function ListsScreen({ navigation }) {
 
   // SELECT from productsLists table
   const getListsData = () => {
+
+    // Create table productsLists for lists storage if not exists
+    db.transaction(
+      tx => {
+        tx.executeSql(`CREATE TABLE IF NOT EXISTS productsLists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        listName VARCHAR(50),
+        createdAt TIMESTAMP,
+        products VARCHAR(255),
+        currentList INTEGER(1) DEFAULT 0)`,
+          [], (trans, result) => {
+            console.log("table created successfully => " + JSON.stringify(result));
+          },
+          error => {
+            console.log("error on creating table productsLists : " + error.message);
+          });
+      }
+    );
+
     db.transaction(
       tx => {
         tx.executeSql(`SELECT * FROM productsLists ORDER BY id ASC`, [], (trans, result) => {
@@ -79,7 +100,7 @@ export default function ListsScreen({ navigation }) {
             setLists(lists);
           } else {
             console.log('Database empty...');
-            setLists(lists);
+            setLists([]);
           }
         });
       }
@@ -307,10 +328,10 @@ export default function ListsScreen({ navigation }) {
       <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
       {
         item.inCurrentList === 1 ?
-        <Ionicons style={styles.ioniconList} name="checkmark-done-circle-outline" />
-        : null
+          <Ionicons style={styles.ioniconList} name="checkmark-done-circle-outline" />
+          : null
       }
-      
+
     </TouchableOpacity >
   );
 
@@ -394,12 +415,6 @@ export default function ListsScreen({ navigation }) {
       color: '#fff',
       fontSize: 36
     },
-    centeredView: {
-      height: '100%',
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center'
-    },
     modalView: {
       width: '90%',
       marginHorizontal: 20,
@@ -477,7 +492,7 @@ export default function ListsScreen({ navigation }) {
         onChangeText={(text) => searchFilter(text)}
         onClearPress={() => clearFilter()}
       ></SearchBar>
-      
+
       <FlatList
         data={products}
         renderItem={renderItem}

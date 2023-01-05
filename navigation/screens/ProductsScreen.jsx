@@ -7,28 +7,9 @@ import database from '../../database/functions/DatabaseConnect';
 
 const db = database;
 
-// DEV - Create table
-db.transaction(
-  tx => {
-    tx.executeSql(`CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name VARCHAR(50) NOT NULL,
-      type VARCHAR(50) NOT NULL,
-      inCurrentList INTEGER(1) DEFAULT 0,
-      lastOrder TIMESTAMP,
-      numOrdered INTEGER DEFAULT 0)`,
-      [], (trans, result) => {
-        console.log("table created products successfully !");
-      },
-      error => {
-        console.log("error on creating table products : " + error.message);
-      });
-  }
-);
-
 export default function ProductsScreen({ navigation }) {
 
-  var [products, setProducts] = useState("");
+  var [products, setProducts] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [nameForm, onChangeName] = React.useState("");
   const [typeForm, onChangeType] = React.useState("");
@@ -39,13 +20,33 @@ export default function ProductsScreen({ navigation }) {
   useEffect(() => {
     // Reload list each time we load the page
     const unsubscribe = navigation.addListener('focus', () => {
-      getData();
+      [getData()]
     });
     return unsubscribe;
   }, [navigation]);
 
   // SELECT from products table
   const getData = () => {
+
+    // Create table products if not exists
+    db.transaction(
+      tx => {
+        tx.executeSql(`CREATE TABLE IF NOT EXISTS products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(50) NOT NULL,
+      type VARCHAR(50) NOT NULL,
+      inCurrentList INTEGER(1) DEFAULT 0,
+      lastOrder TIMESTAMP,
+      numOrdered INTEGER DEFAULT 0)`,
+          [], (trans, result) => {
+            console.log("table created products successfully !");
+          },
+          error => {
+            console.log("error on creating table products : " + error.message);
+          });
+      }
+    );
+
     db.transaction(
       tx => {
         tx.executeSql(`SELECT * FROM products ORDER BY type ASC`, [], (trans, result) => {
@@ -236,12 +237,6 @@ export default function ProductsScreen({ navigation }) {
     ionicon: {
       color: '#fff',
       fontSize: 40
-    },
-    centeredView: {
-      height: '100%',
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center'
     },
     modalView: {
       width: '90%',

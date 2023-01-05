@@ -24,6 +24,7 @@ export default function OverviewScreen({ navigation }) {
 
   // Get lists in table productsLists
   const getLists = () => {
+
     db.transaction(
       tx => {
         tx.executeSql(`SELECT * FROM productsLists ORDER BY id`, [], (trans, result) => {
@@ -35,7 +36,7 @@ export default function OverviewScreen({ navigation }) {
           } else {
             console.log('No list in DB ! ');
             dropTableLists(); // Drop the table => To be sure no list is in cache somewhere...
-            setLists(lists);
+            setLists([]);
           }
         });
       }
@@ -259,7 +260,7 @@ export default function OverviewScreen({ navigation }) {
               <TouchableOpacity
                 style={styles.btnBrowseList}
                 onPress={() => alertEmptyList(item)}
-                >
+              >
                 <Ionicons style={styles.icon} name='eye-off-outline' />
               </TouchableOpacity>
           }
@@ -415,7 +416,7 @@ export default function OverviewScreen({ navigation }) {
               renderItem={renderItem}
               keyExtractor={(item) => item ? item.id : 0}
             />
-            : null
+            : <Text>No records found in database</Text>
         }
       </View>
 

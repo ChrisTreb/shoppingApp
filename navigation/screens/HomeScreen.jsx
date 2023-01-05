@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, Alert, StatusBar, Button } from 'react-native';
+import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, Alert, StatusBar } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 
@@ -25,6 +25,26 @@ export default function HomeScreen({ navigation }) {
 
   // SELECT from productsLists table
   const getCurrentListProducts = () => {
+
+    // Create table products if not exists
+    db.transaction(
+      tx => {
+        tx.executeSql(`CREATE TABLE IF NOT EXISTS products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(50) NOT NULL,
+      type VARCHAR(50) NOT NULL,
+      inCurrentList INTEGER(1) DEFAULT 0,
+      lastOrder TIMESTAMP,
+      numOrdered INTEGER DEFAULT 0)`,
+          [], (trans, result) => {
+            console.log("table created products successfully !");
+          },
+          error => {
+            console.log("error on creating table products : " + error.message);
+          });
+      }
+    );
+
     db.transaction(
       tx => {
         tx.executeSql(`SELECT * FROM products WHERE inCurrentList = 1 ORDER BY type DESC`, [], (trans, result) => {
@@ -35,9 +55,8 @@ export default function HomeScreen({ navigation }) {
             setProducts(products);
           } else {
             console.log('Database empty... no products in currentList');
-            products = null;
-            setProducts(products);
-            setDisplayedProducts(displayedProducts);
+            setProducts([]);
+            setDisplayedProducts([]);
           }
         });
       }
@@ -46,7 +65,7 @@ export default function HomeScreen({ navigation }) {
 
   const getCurrentListData = () => {
 
-    // Create table for lists storage
+    // Create table productsLists for lists storage if not exists
     db.transaction(
       tx => {
         tx.executeSql(`CREATE TABLE IF NOT EXISTS productsLists (
@@ -75,9 +94,8 @@ export default function HomeScreen({ navigation }) {
           } else {
             console.log('CurrentList is empty... ');
             setList({});
-            products = [];
-            setProducts(products);
-            setDisplayedProducts(displayedProducts);
+            setProducts([]);
+            setDisplayedProducts([]);
           }
         });
       }
@@ -317,7 +335,7 @@ export default function HomeScreen({ navigation }) {
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: '#ffffe0'
-    },  
+    },
     modalHomeView: {
       flex: 1,
       alignItems: 'center',
@@ -425,7 +443,7 @@ export default function HomeScreen({ navigation }) {
       Else display cat with empty list message
       */}
       {
-        list && products ?
+        (Object.keys(list).length != 0) && (products != 0) ?
           <FlatList style={styles.flatlist}
             data={products}
             renderItem={renderItem}
