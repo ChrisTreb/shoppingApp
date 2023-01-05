@@ -394,7 +394,14 @@ export default function ListsScreen({ navigation }) {
       color: '#fff',
       fontSize: 36
     },
+    centeredView: {
+      height: '100%',
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
     modalView: {
+      width: '90%',
       marginHorizontal: 20,
       marginVertical: 50,
       backgroundColor: "white",
@@ -423,8 +430,10 @@ export default function ListsScreen({ navigation }) {
       textAlign: "center"
     },
     modalButtonContainer: {
-      marginVertical: 40,
+      marginTop: 50,
+      paddingBottom: 35,
       width: '100%',
+      maxHeight: 60,
       flex: 1,
       flexDirection: 'row',
       alignItems: "center",
@@ -492,7 +501,7 @@ export default function ListsScreen({ navigation }) {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
 
-            <Text style={styles.modalText}>Create a list</Text>
+            <Text style={styles.modalText}>Create a new list</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter list name - ex : My list"

@@ -284,10 +284,10 @@ export default function OverviewScreen({ navigation }) {
       justifyContent: 'center',
       width: '90%',
       flex: 1,
-      marginHorizontal: 16
+      marginHorizontal: 16,
     },
     listContainer: {
-      marginVertical: 15,
+      marginBottom: 15,
       maxHeight: 500
     },
     listContainerText: {
@@ -358,15 +358,7 @@ export default function OverviewScreen({ navigation }) {
     modalListView: {
       height: "100%",
       padding: 10,
-      alignItems: "center",
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 2
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      elevation: 5
+      alignItems: "center"
     },
     modalListText: {
       marginTop: 30,
@@ -393,11 +385,21 @@ export default function OverviewScreen({ navigation }) {
     },
     modalProductsList: {
       fontSize: 20,
-      marginTop: 30
+      marginTop: 30,
     },
     icon: {
       fontSize: 20,
       color: '#fff'
+    },
+    ionicon: {
+      fontSize: 20
+    },
+    iconWarning: {
+      fontSize: 20,
+      color: "#ff6961"
+    },
+    warningText: {
+      color: "#ff6961"
     }
   });
 
@@ -405,7 +407,7 @@ export default function OverviewScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.listContainer}>
-        <Text style={styles.listContainerText}>Lists storage</Text>
+        <Text style={styles.listContainerText}><Ionicons style={styles.ionicon} name="server-outline" /> Lists storage</Text>
         {
           lists ?
             <FlatList
@@ -417,7 +419,7 @@ export default function OverviewScreen({ navigation }) {
         }
       </View>
 
-      <Text><Ionicons style={styles.icon} name="warning-outline" /> Caution, these actions are irreversible !</Text>
+      <Text style={styles.warningText}><Ionicons style={styles.iconWarning} name="warning-outline" /> Caution, these actions are irreversible !</Text>
       <View style={styles.buttonContainer}>
         <Pressable style={styles.button} onPress={() => alertDropProductsTable()} >
           <Text style={styles.buttonText}>Drop products</Text>
@@ -438,7 +440,7 @@ export default function OverviewScreen({ navigation }) {
       >
         <ScrollView style={styles.scrollView}>
           <View style={styles.modalListView}>
-            <Text style={styles.modalListText}>List name : {listName}</Text>
+            <Text style={styles.modalListText}>{listName}</Text>
             <Text style={styles.modalProductsList}>{products}</Text>
           </View>
         </ScrollView>

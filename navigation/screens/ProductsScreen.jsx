@@ -237,7 +237,14 @@ export default function ProductsScreen({ navigation }) {
       color: '#fff',
       fontSize: 40
     },
+    centeredView: {
+      height: '100%',
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
     modalView: {
+      width: '90%',
       marginHorizontal: 20,
       marginVertical: 50,
       backgroundColor: "white",
@@ -260,6 +267,7 @@ export default function ProductsScreen({ navigation }) {
       textAlign: "center"
     },
     modalButtonContainer: {
+      paddingTop: 15,
       marginVertical: 40,
       width: '100%',
       flex: 1,
@@ -321,10 +329,10 @@ export default function ProductsScreen({ navigation }) {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Ajouter un produit</Text>
+            <Text style={styles.modalText}>Add new product</Text>
             <TextInput
               style={styles.input}
-              placeholder="Product name - ex : Fromage râpé"
+              placeholder="Product name - ex : Cheese"
               onChangeText={onChangeName}
               value={nameForm}
             ></TextInput>

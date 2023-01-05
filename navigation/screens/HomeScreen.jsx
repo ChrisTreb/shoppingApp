@@ -311,25 +311,26 @@ export default function HomeScreen({ navigation }) {
       marginRight: 15,
       borderRadius: 20
     },
+    centeredView: {
+      height: '100%',
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#ffffe0'
+    },  
     modalHomeView: {
-      height: "100%",
-      padding: 35,
-      alignItems: "center",
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 2
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      elevation: 5
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     modalHomeText: {
-      marginTop: 150,
-      paddingBottom: 15,
       fontSize: 50,
       fontWeight: 'bold',
-      marginBottom: 15,
+      textAlign: "center"
+    },
+    modalHomeSubText: {
+      paddingBottom: 50,
+      fontSize: 16,
       textAlign: "center"
     },
     modalListView: {
@@ -351,13 +352,6 @@ export default function HomeScreen({ navigation }) {
       fontWeight: 'bold',
       textAlign: "center"
     },
-    homeImg: {
-      paddingVertical: 50,
-      width: '100%',
-      height: 250,
-      borderRadius: 10,
-      marginBottom: 50
-    },
     startButton: {
       backgroundColor: "#1E90FF",
       flex: 1,
@@ -369,6 +363,7 @@ export default function HomeScreen({ navigation }) {
     },
     startIcon: {
       fontSize: 60,
+      marginLeft: 3,
       color: '#fff'
     },
     btnCloseEdit: {
@@ -393,6 +388,12 @@ export default function HomeScreen({ navigation }) {
       maxWidth: "100%",
       marginTop: 15
     },
+    ioniconTitle: {
+      fontSize: 50
+    },
+    iconEdit: {
+      fontSize: 30
+    }
   });
 
   return (
@@ -405,14 +406,15 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.listHeaderText}>No Active List</Text>
         }
         {list.listName ?
-          <Button
+          <TouchableOpacity
             style={styles.btnEdit}
             onPress={() => {
               setModalListVisible(!modalListVisible),
                 console.log("Opening edit modal !")
             }}
-            title="Edit list"
-          />
+          >
+            <Ionicons style={styles.iconEdit} name='create' />
+          </TouchableOpacity>
           :
           null
         }
@@ -447,13 +449,13 @@ export default function HomeScreen({ navigation }) {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalHomeView}>
-            <Text style={styles.modalHomeText}>Shopping App</Text>
-            <Image style={styles.homeImg} source={require('../../img/home/shopping.gif')} />
+            <Text style={styles.modalHomeText}><Ionicons style={styles.ioniconTitle} name="list-outline" />Listahan</Text>
+            <Text style={styles.modalHomeSubText}>My shopping mate</Text>
             <TouchableOpacity style={styles.startButton}
               activeOpacity={0.8}
               onPress={() => setModalHomeVisible(!modalHomeVisible)}
             >
-              <Ionicons style={styles.startIcon} name='navigate-circle' />
+              <Ionicons style={styles.startIcon} name='play-circle' />
             </TouchableOpacity>
           </View>
         </View>
@@ -471,6 +473,7 @@ export default function HomeScreen({ navigation }) {
         <View>
           <View style={styles.modalListView}>
             <Text style={styles.modalListText}>List editing</Text>
+            <Text>Here you can delete items</Text>
 
             <FlatList style={styles.flatlistEdit}
               data={products}
