@@ -1,8 +1,8 @@
 {
   "expo": {
     "owner": "soysauce",
-    "name": "listahan",
-    "slug": "listahan",
+    "name": "shoppingapp",
+    "slug": "shoppingapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -26,7 +26,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.soysauce.listahan"
+      "package": "com.soysauce.shoppingapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
