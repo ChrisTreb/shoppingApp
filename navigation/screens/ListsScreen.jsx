@@ -389,7 +389,7 @@ export default function ListsScreen({ navigation }) {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#4d2efc',
+      backgroundColor: '#1E90FF',
       width: 70,
       height: 70,
       position: 'absolute',

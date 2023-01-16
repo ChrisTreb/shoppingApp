@@ -205,7 +205,7 @@ export default function ProductsScreen({ navigation }) {
     title: {
       maxWidth: "80%",
       color: "#696969",
-      fontSize: 20
+      fontSize: 16
     },
     productImg: {
       maxWidth: 40,

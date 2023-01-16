@@ -306,8 +306,6 @@ export default function HomeScreen({ navigation }) {
       padding: 10,
       marginVertical: 5,
       borderRadius: 5,
-      borderWidth: 1,
-      borderColor: "#ff6961",
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
@@ -320,7 +318,7 @@ export default function HomeScreen({ navigation }) {
     title: {
       maxWidth: "80%",
       color: "#696969",
-      fontSize: 20
+      fontSize: 16
     },
     productImg: {
       maxWidth: 40,
@@ -333,8 +331,7 @@ export default function HomeScreen({ navigation }) {
       height: '100%',
       flex: 1,
       alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#ffffe0'
+      justifyContent: 'center'
     },
     modalHomeView: {
       flex: 1,
@@ -352,9 +349,11 @@ export default function HomeScreen({ navigation }) {
       textAlign: "center"
     },
     modalListView: {
-      height: "100%",
-      padding: 10,
+      display: 'flex',
       alignItems: "center",
+      justifyContent: 'center',
+      height: "100%",
+      padding: 15,
       shadowColor: "#000",
       shadowOffset: {
         width: 0,
@@ -410,6 +409,7 @@ export default function HomeScreen({ navigation }) {
       fontSize: 50
     },
     iconEdit: {
+      paddingTop: 3,
       fontSize: 30
     }
   });

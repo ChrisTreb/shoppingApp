@@ -11,9 +11,9 @@ import ProductsScreen from './screens/ProductsScreen';
 import OverviewScreen from './screens/OverviewScreen';
 
 //Screen names
-const homeName = "Ma liste";
-const listsName = "Listes";
-const productsName = "Produits";
+const homeName = "My list";
+const listsName = "Lists";
+const productsName = "Products";
 const overviewName = "Dashboard";
 
 const Tab = createBottomTabNavigator();
