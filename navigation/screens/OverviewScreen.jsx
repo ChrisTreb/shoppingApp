@@ -499,7 +499,7 @@ export default function OverviewScreen({ navigation }) {
           activeOpacity={0.8}
           onPress={() => setModalVisible(!modalVisible)}
         >
-          <Ionicons style={styles.closeBtnEditText} name="close-circle-outline" />
+          <Ionicons style={styles.closeBtnEditText} name="close-circle" />
         </TouchableOpacity>
       </Modal>
 

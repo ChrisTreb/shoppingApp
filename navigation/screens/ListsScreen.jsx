@@ -70,7 +70,8 @@ export default function ListsScreen({ navigation }) {
 
   // SELECT from productsLists table
   const getListsData = () => {
-
+    // Get data for list refresh, display check icon 
+    getData();
     // Create table productsLists for lists storage if not exists
     db.transaction(
       tx => {
@@ -130,6 +131,7 @@ export default function ListsScreen({ navigation }) {
 
   // Alert on product click => Delete item
   const addToListAlert = (item) =>
+    
     Alert.alert(
       "ADD TO LIST",
       "Add this ? " + item.name,
