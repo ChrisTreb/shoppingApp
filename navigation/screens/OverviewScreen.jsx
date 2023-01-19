@@ -425,6 +425,7 @@ export default function OverviewScreen({ navigation }) {
       borderRadius: 35
     },
     closeBtnEditText: {
+      marginLeft: 3,
       color: '#fff',
       fontSize: 48
     },

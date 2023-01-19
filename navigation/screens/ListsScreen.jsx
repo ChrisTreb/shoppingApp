@@ -412,7 +412,6 @@ export default function ListsScreen({ navigation }) {
     ioniconList: {
       position: 'absolute',
       right: 5,
-      color: '#fff',
       fontSize: 36
     },
     modalView: {
