@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import SearchBar from "react-native-dynamic-search-bar";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
+import setImage from '../../lists/functions/GetProductImage';
 
 const db = database;
 
 export default function ListsScreen({ navigation }) {
 
-  const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
   const [filteredData, setFilteredData] = useState([]);
   const [search, setsearch] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -308,22 +308,6 @@ export default function ListsScreen({ navigation }) {
     }
   }
 
-  const setImage = (type) => {
-    var imgPath = "";
-
-    if (type == types[0]) { imgPath = require('../../img/products/fruits.png'); }
-    else if (type == types[1]) { imgPath = require('../../img/products/fresh.png'); }
-    else if (type == types[2]) { imgPath = require('../../img/products/spices.png'); }
-    else if (type == types[3]) { imgPath = require('../../img/products/liquid.png'); }
-    else if (type == types[4]) { imgPath = require('../../img/products/frozen.png'); }
-    else if (type == types[5]) { imgPath = require('../../img/products/hygiene.png'); }
-    else if (type == types[6]) { imgPath = require('../../img/products/textile.png'); }
-    else if (type == types[7]) { imgPath = require('../../img/products/hardware.png'); }
-    else { imgPath = require('../../img/products/other.png'); }
-
-    return imgPath;
-  }
-
   const Item = ({ item }) => (
     <TouchableOpacity onPress={() => addToListAlert(item)} style={styles.item}>
       <Image style={styles.productImg} source={setImage(item.type)} />
@@ -446,8 +430,8 @@ export default function ListsScreen({ navigation }) {
       textAlign: "center"
     },
     modalButtonContainer: {
-      marginTop: 50,
-      paddingBottom: 35,
+      marginVertical: 50,
+      paddingBottom: 20,
       width: '100%',
       maxHeight: 60,
       flex: 1,
@@ -455,13 +439,21 @@ export default function ListsScreen({ navigation }) {
       alignItems: "center",
       justifyContent: 'space-around'
     },
-    closeModalButton: {
+    modalButton: {
       alignItems: 'center',
       width: 100,
       height: 50,
       borderRadius: 5,
       padding: 15,
-      backgroundColor: '#1E90FF'
+      backgroundColor: '#1E90FF',
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.22,
+      shadowRadius: 2.22,
+      elevation: 3
     },
     textStyle: {
       color: '#fff',
@@ -480,6 +472,10 @@ export default function ListsScreen({ navigation }) {
       width: '100%',
       fontSize: 12,
       textAlign: 'left'
+    },
+    image: {
+      maxHeight: 300,
+      width: '90%'
     }
   });
 
@@ -528,18 +524,19 @@ export default function ListsScreen({ navigation }) {
 
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
-                style={styles.closeModalButton}
+                style={styles.modalButton}
                 onPress={() => insertList(nameForm)}
               >
-                <Text style={styles.textStyle}>Submit</Text>
+                <Text style={styles.textStyle}>Save</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.closeModalButton}
+                style={styles.modalButton}
                 onPress={() => setModalVisible(!modalVisible)}
               >
                 <Text style={styles.textStyle}>Close</Text>
               </TouchableOpacity>
             </View>
+            <Image style={styles.image} source={require('../../img/lists/list.png')} />
           </View>
         </View>
       </Modal>

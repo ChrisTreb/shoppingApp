@@ -4,6 +4,7 @@ import { SafeAreaView, Image, View, Text, FlatList, TouchableOpacity, StyleSheet
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
 import getProductsFromList from '../../lists/functions/GetProductsFromList';
+import setImage from '../../lists/functions/GetProductImage';
 
 const db = database;
 
@@ -13,7 +14,6 @@ export default function OverviewScreen({ navigation }) {
   var [products, setProducts] = useState([]);
   var [listName, setListName] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-  const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
 
   useEffect(() => {
     // Reload list each time we load the page
@@ -22,23 +22,6 @@ export default function OverviewScreen({ navigation }) {
     });
     return unsubscribe;
   }, [navigation]);
-
-  // Images displayed in lists
-  const setImage = (type) => {
-    var imgPath = "";
-
-    if (type == types[0]) { imgPath = require('../../img/products/fruits.png'); }
-    else if (type == types[1]) { imgPath = require('../../img/products/fresh.png'); }
-    else if (type == types[2]) { imgPath = require('../../img/products/spices.png'); }
-    else if (type == types[3]) { imgPath = require('../../img/products/liquid.png'); }
-    else if (type == types[4]) { imgPath = require('../../img/products/frozen.png'); }
-    else if (type == types[5]) { imgPath = require('../../img/products/hygiene.png'); }
-    else if (type == types[6]) { imgPath = require('../../img/products/textile.png'); }
-    else if (type == types[7]) { imgPath = require('../../img/products/hardware.png'); }
-    else { imgPath = require('../../img/products/other.png'); }
-
-    return imgPath;
-  }
 
   // Get lists in table productsLists
   const getLists = () => {

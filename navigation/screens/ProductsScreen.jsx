@@ -4,6 +4,8 @@ import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet
 import SelectDropdown from 'react-native-select-dropdown'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import database from '../../database/functions/DatabaseConnect';
+import setImage from '../../lists/functions/GetProductImage';
+import types from '../../variables/Types';
 
 const db = database;
 
@@ -13,9 +15,6 @@ export default function ProductsScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [nameForm, onChangeName] = React.useState("");
   const [typeForm, onChangeType] = React.useState("");
-
-  // Select options array
-  const types = ['Fruits et légumes', 'Produits frais', 'Epicerie', 'Liquides', 'Surgelés', 'Hygiène', 'Textile', 'Droguerie', 'Autres'];
 
   useEffect(() => {
     // Reload list each time we load the page
@@ -146,22 +145,6 @@ export default function ProductsScreen({ navigation }) {
       }
     );
 
-  const setImage = (type) => {
-    var imgPath = "";
-
-    if (type == types[0]) { imgPath = require('../../img/products/fruits.png'); }
-    else if (type == types[1]) { imgPath = require('../../img/products/fresh.png'); }
-    else if (type == types[2]) { imgPath = require('../../img/products/spices.png'); }
-    else if (type == types[3]) { imgPath = require('../../img/products/liquid.png'); }
-    else if (type == types[4]) { imgPath = require('../../img/products/frozen.png'); }
-    else if (type == types[5]) { imgPath = require('../../img/products/hygiene.png'); }
-    else if (type == types[6]) { imgPath = require('../../img/products/textile.png'); }
-    else if (type == types[7]) { imgPath = require('../../img/products/hardware.png'); }
-    else { imgPath = require('../../img/products/other.png'); }
-
-    return imgPath;
-  }
-
   const Item = ({ name, type }) => (
     <TouchableOpacity onPress={() => deleteAlert(name)} style={styles.item}>
       <Image style={styles.productImg} source={setImage(type)} />
@@ -263,20 +246,30 @@ export default function ProductsScreen({ navigation }) {
     },
     modalButtonContainer: {
       paddingTop: 15,
-      marginVertical: 40,
+      marginTop: 20,
+      marginBottom: 60,
       width: '100%',
+      maxHeight: 80,
       flex: 1,
       flexDirection: 'row',
       alignItems: "center",
       justifyContent: 'space-around'
     },
-    closeModalButton: {
+    modalButton: {
       alignItems: 'center',
       width: 100,
       height: 50,
       borderRadius: 5,
       padding: 15,
-      backgroundColor: '#1E90FF'
+      backgroundColor: '#1E90FF',
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.22,
+      shadowRadius: 2.22,
+      elevation: 3
     },
     textStyle: {
       color: '#fff',
@@ -296,6 +289,10 @@ export default function ProductsScreen({ navigation }) {
     },
     dropdown: {
       height: 'auto'
+    },
+    image: {
+      maxHeight: 200,
+      maxWidth: '100%'
     }
   });
 
@@ -342,18 +339,19 @@ export default function ProductsScreen({ navigation }) {
 
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
-                style={styles.closeModalButton}
+                style={styles.modalButton}
                 onPress={() => insertItem(nameForm, typeForm)}
               >
                 <Text style={styles.textStyle}>Save</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.closeModalButton}
+                style={styles.modalButton}
                 onPress={() => setModalVisible(!modalVisible)}
               >
                 <Text style={styles.textStyle}>Close</Text>
               </TouchableOpacity>
             </View>
+            <Image style={styles.image} source={require('../../img/product/dairy-products.png')} />
           </View>
         </View>
       </Modal>
