@@ -398,7 +398,7 @@ export default function ProductsScreen({ navigation }) {
       {
         item.inCurrentList !== 1 ?
           <TouchableOpacity onPress={() => addToListAlert(item)} style={styles.itemBtnAdd}>
-            <Ionicons style={styles.addIcon} name="add-circle-outline" />
+            <Ionicons style={styles.addListIcon} name="add-circle-outline" />
           </TouchableOpacity >
           : null
       }
@@ -482,8 +482,9 @@ export default function ProductsScreen({ navigation }) {
       borderRadius: 20
     },
     addListIcon: {
+      marginLeft: 2,
       color: '#fff',
-      fontSize: 40
+      fontSize: 35
     },
     /* Button add new object */
     btnAddObjectView: {
@@ -507,6 +508,7 @@ export default function ProductsScreen({ navigation }) {
       height: 70
     },
     addIcon: {
+      color: '#fff',
       fontSize: 40
     },
     /* Modal */
@@ -532,6 +534,9 @@ export default function ProductsScreen({ navigation }) {
       fontWeight: 'bold',
       marginBottom: 15,
       textAlign: "center"
+    },
+    modalTextIcon: {
+      fontSize: 30,
     },
     modalButtonContainer: {
       paddingTop: 15,
@@ -576,8 +581,10 @@ export default function ProductsScreen({ navigation }) {
       height: 50,
       fontSize: 14,
       margin: 12,
+      padding: 10,
       borderWidth: 1,
-      padding: 10
+      borderColor: "#D3D3D3",
+      borderRadius: 5
     },
     modalSelect: {
       width: '100%',
@@ -613,6 +620,7 @@ export default function ProductsScreen({ navigation }) {
       textAlign: 'center'
     },
     iconBtnCloseModal: {
+      color: '#fff',
       marginLeft: 2,
       textAlign: 'center',
       fontSize: 40
@@ -653,7 +661,7 @@ export default function ProductsScreen({ navigation }) {
       >
         <View style={styles.modalCenteredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Add new product</Text>
+            <Text style={styles.modalText}><Ionicons style={styles.modalTextIcon} name='pizza' /> Add new product</Text>
             <TextInput
               style={styles.modalInput}
               placeholder="Product name - ex : Cheese"
@@ -678,7 +686,7 @@ export default function ProductsScreen({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalText}>Create a new list</Text>
+            <Text style={styles.modalText}><Ionicons style={styles.modalTextIcon} name='list-circle' /> Create a new list</Text>
             <TextInput
               style={styles.modalInput}
               placeholder="Enter list name - ex : My list"
