@@ -395,35 +395,45 @@ export default function ProductsScreen({ navigation }) {
 
   const Item = ({ item }) => (
     <TouchableOpacity onPress={() => deleteAlert(item.name)} style={styles.item}>
-       {
+      {
         item.inCurrentList !== 1 ?
-          <TouchableOpacity onPress={() => addToListAlert(item)} style={styles.btnAdd}>
+          <TouchableOpacity onPress={() => addToListAlert(item)} style={styles.itemBtnAdd}>
             <Ionicons style={styles.addIcon} name="add-circle-outline" />
           </TouchableOpacity >
           : null
       }
-      <Image style={styles.productImg} source={setImage(item.type)} />
-      <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
+      <Image style={styles.itemProductImg} source={setImage(item.type)} />
+      <Text style={styles.itemTitle} activeOpacity={0.8}>{item.name}</Text>
       {
         item.inCurrentList === 1 ?
-          <Ionicons style={styles.ioniconList} name="checkmark-done-circle-outline" />
+          <Ionicons style={styles.iconListCheck} name="checkmark-done-circle-outline" />
           : null
       }
     </TouchableOpacity >
   );
 
   const renderItem = ({ item }) => (
-    <Item style={styles.title} item={item} />
+    <Item style={styles.itemTitle} item={item} />
   );
 
   // Style
   const styles = StyleSheet.create({
-    container: {
+    /* Main container */
+    safeAreaView: {
       width: '90%',
       flex: 1,
       paddingTop: 10,
       marginHorizontal: 16
     },
+    /* Searchbar */
+    searchbar: {
+      width: '100%',
+      height: 50,
+      marginBottom: 20,
+      paddingVertical: 10
+    },
+    /* Flatlist */
+    /* Items */
     item: {
       flex: 1,
       alignItems: "center",
@@ -445,19 +455,38 @@ export default function ProductsScreen({ navigation }) {
       shadowRadius: 2.22,
       elevation: 3
     },
-    title: {
+    itemTitle: {
       maxWidth: "70%",
       color: "#696969",
       fontSize: 16
     },
-    productImg: {
+    itemProductImg: {
       maxWidth: 40,
       maxHeight: 40,
       marginLeft: 10,
       marginRight: 15,
       borderRadius: 20
     },
-    buttonContainer: {
+    iconListCheck: {
+      position: 'absolute',
+      right: 5,
+      fontSize: 36
+    },
+    itemBtnAdd: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#1E90FF',
+      maxWidth: 40,
+      height: 40,
+      borderRadius: 20
+    },
+    addListIcon: {
+      color: '#fff',
+      fontSize: 40
+    },
+    /* Button add new object */
+    btnAddObjectView: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
@@ -470,17 +499,17 @@ export default function ProductsScreen({ navigation }) {
       marginBottom: 20,
       borderRadius: 35
     },
-    button: {
+    btnAddObject: {
       marginLeft: 3,
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
       height: 70
     },
-    ionicon: {
-      color: '#fff',
+    addIcon: {
       fontSize: 40
     },
+    /* Modal */
     modalView: {
       width: '90%',
       marginHorizontal: 20,
@@ -517,9 +546,10 @@ export default function ProductsScreen({ navigation }) {
     },
     modalButton: {
       alignItems: 'center',
-      width: 100,
+      width: '100%',
       height: 50,
       borderRadius: 5,
+      marginTop: 20,
       padding: 15,
       backgroundColor: '#1E90FF',
       shadowColor: "#000",
@@ -531,11 +561,17 @@ export default function ProductsScreen({ navigation }) {
       shadowRadius: 2.22,
       elevation: 3
     },
-    textStyle: {
+    modalBtnText: {
       color: '#fff',
-      fontSize: 16
+      fontSize: 16,
+      width: '100%',
+      textAlign: 'center'
     },
-    input: {
+    iconSave: {
+      fontSize: 20,
+      marginRight: 5
+    },
+    modalInput: {
       width: '100%',
       height: 50,
       fontSize: 14,
@@ -543,48 +579,49 @@ export default function ProductsScreen({ navigation }) {
       borderWidth: 1,
       padding: 10
     },
-    select: {
+    modalSelect: {
       width: '100%',
       margin: 0
     },
-    dropdown: {
+    modalDropdown: {
       height: 'auto'
     },
-    searchbar: {
-      width: '100%',
-      height: 50,
-      marginBottom: 20,
-      paddingVertical: 10
-    },
-    inputHelper: {
+    modalInputHelper: {
       color: '#ff6961',
       width: '100%',
       fontSize: 12,
       textAlign: 'left'
     },
-    ioniconList: {
-      position: 'absolute',
-      right: 5,
-      fontSize: 36
-    },
-    btnAdd :{
+    /* Button close modal */
+    btnCloseModalContainer: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: '#1E90FF',
-      maxWidth: 40,
-      height: 40,
-      borderRadius: 20
+      width: 70,
+      height: 70,
+      position: 'absolute',
+      bottom: -50,
+      right: 20,
+      marginBottom: 20,
+      borderRadius: 35
     },
-    addIcon: {
+    btnCloseModal: {
+      color: '#fff',
+      fontSize: 16,
+      width: '100%',
+      textAlign: 'center'
+    },
+    iconBtnCloseModal: {
       marginLeft: 2,
-      fontSize: 36
+      textAlign: 'center',
+      fontSize: 40
     }
   });
 
   // Render view
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.safeAreaView}>
       <SearchBar
         style={styles.searchbar}
         placeholder="Search product"
@@ -600,9 +637,9 @@ export default function ProductsScreen({ navigation }) {
         keyExtractor={(item) => item ? item.id : 0}
       />
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} activeOpacity={0.8} >
-          <Ionicons style={styles.ionicon} name='add-outline' onPress={() => setModalVisible(true)} />
+      <View style={styles.btnAddObjectView}>
+        <TouchableOpacity style={styles.btnAddObject} activeOpacity={0.8} >
+          <Ionicons style={styles.addIcon} name='add-outline' onPress={() => setModalVisible(true)} />
         </TouchableOpacity>
       </View>
 
@@ -614,19 +651,19 @@ export default function ProductsScreen({ navigation }) {
           setModalVisible(!modalVisible);
         }}
       >
-        <View style={styles.centeredView}>
+        <View style={styles.modalCenteredView}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>Add new product</Text>
             <TextInput
-              style={styles.input}
+              style={styles.modalInput}
               placeholder="Product name - ex : Cheese"
               onChangeText={onChangeName}
               value={nameForm}
             ></TextInput>
             <SelectDropdown
               data={types}
-              buttonStyle={styles.select}
-              dropdownStyle={styles.dropdown}
+              buttonStyle={styles.modalSelect}
+              dropdownStyle={styles.modalDropdown}
               defaultButtonText="Select product type"
               onSelect={onChangeType}
               value={typeForm}
@@ -637,41 +674,38 @@ export default function ProductsScreen({ navigation }) {
                 style={styles.modalButton}
                 onPress={() => insertItem(nameForm, typeForm)}
               >
-                <Text style={styles.textStyle}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setModalVisible(!modalVisible)}
-              >
-                <Text style={styles.textStyle}>Close</Text>
+                <Text style={styles.modalBtnText}><Ionicons style={styles.iconSave} name='save' /> Save product</Text>
               </TouchableOpacity>
             </View>
 
             <Text style={styles.modalText}>Create a new list</Text>
             <TextInput
-              style={styles.input}
+              style={styles.modalInput}
               placeholder="Enter list name - ex : My list"
               onChangeText={onChangeListName}
               value={nameListForm}
             ></TextInput>
-            <Text style={styles.inputHelper}>List name max length 24 characters</Text>
+            <Text style={styles.modalInputHelper}>List name max length 24 characters</Text>
 
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={() => insertList(nameListForm)}
               >
-                <Text style={styles.textStyle}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setModalVisible(!modalVisible)}
-              >
-                <Text style={styles.textStyle}>Close</Text>
+                <Text style={styles.modalBtnText}><Ionicons style={styles.iconSave} name='save' /> Save list</Text>
               </TouchableOpacity>
             </View>
-
           </View>
+
+          <View style={styles.btnCloseModalContainer}>
+            <TouchableOpacity
+              style={styles.btnCloseModal}
+              onPress={() => setModalVisible(!modalVisible)}
+            >
+              <Ionicons style={styles.iconBtnCloseModal} name='close-circle' />
+            </TouchableOpacity>
+          </View>
+
         </View>
       </Modal>
     </SafeAreaView>
