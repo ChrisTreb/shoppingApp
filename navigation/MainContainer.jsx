@@ -6,13 +6,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // Screens
 import HomeScreen from './screens/HomeScreen';
-import ListsScreen from './screens/ListsScreen';
 import ProductsScreen from './screens/ProductsScreen';
 import OverviewScreen from './screens/OverviewScreen';
 
 //Screen names
 const homeName = "My list";
-const listsName = "Lists";
 const productsName = "Products";
 const overviewName = "Dashboard";
 
@@ -51,10 +49,6 @@ function MainContainer() {
 
             if (rn === homeName) {
               iconName = focused ? 'list' : 'list-outline';
-
-            } else if (rn === listsName) {
-              iconName = focused ? 'create' : 'create-outline';
-
             } else if (rn === productsName) {
               iconName = focused ? 'settings' : 'settings-outline';
 
@@ -69,7 +63,6 @@ function MainContainer() {
         })}>
 
         <Tab.Screen name={homeName} component={HomeScreen} />
-        <Tab.Screen name={listsName} component={ListsScreen} />
         <Tab.Screen name={productsName} component={ProductsScreen} />
         <Tab.Screen name={overviewName} component={OverviewScreen} />
 
