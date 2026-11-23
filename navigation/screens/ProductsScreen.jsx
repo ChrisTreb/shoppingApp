@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   FlatList,
@@ -13,7 +12,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ToastAndroid,
+  Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { dbService } from '../../database/functions/DatabaseConnect';
 import setImage from '../../lists/functions/GetProductImage';
@@ -77,6 +79,32 @@ export default function ProductsScreen({ navigation }) {
   const [typeForm, setTypeForm] = useState('');
   const [nameListForm, setNameListForm] = useState('');
 
+  // Toast notification state
+  const [toastMessage, setToastMessage] = useState('');
+  const toastAnim = useRef(new Animated.Value(0)).current;
+
+  const showToast = useCallback((msg) => {
+    setToastMessage(msg);
+    if (Platform.OS === 'android' && ToastAndroid) {
+      ToastAndroid.show(msg, ToastAndroid.SHORT);
+    }
+    Animated.sequence([
+      Animated.timing(toastAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.delay(1600),
+      Animated.timing(toastAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setToastMessage('');
+    });
+  }, [toastAnim]);
+
   // Refresh products and lists from database
   const loadData = useCallback(() => {
     try {
@@ -121,6 +149,7 @@ export default function ProductsScreen({ navigation }) {
       dbService.insertProduct(nameForm.trim(), typeForm.trim());
       setNameForm('');
       setTypeForm('');
+      setSearch('');
       setModalVisible(false);
       loadData();
     } catch (err) {
@@ -158,7 +187,9 @@ export default function ProductsScreen({ navigation }) {
         Alert.alert("Already in List", `"${item.name}" is already in your current list.`);
         return;
       }
+      setSearch('');
       loadData();
+      showToast(`"${item.name}" ajouté à la liste !`);
     } catch (err) {
       if (err.message === "NO_ACTIVE_LIST") {
         Alert.alert(
@@ -176,7 +207,7 @@ export default function ProductsScreen({ navigation }) {
         Alert.alert("Error", "Could not add item to list.");
       }
     }
-  }, [loadData]);
+  }, [loadData, showToast]);
 
   // Delete product from database
   const handleDeleteProduct = useCallback((id) => {
@@ -220,6 +251,30 @@ export default function ProductsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
+      {toastMessage ? (
+        <Animated.View
+          style={[
+            styles.toastContainer,
+            {
+              opacity: toastAnim,
+              transform: [
+                {
+                  translateY: toastAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-20, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <Ionicons name="checkmark-circle" size={20} color="#ffffff" style={styles.toastIcon} />
+          <Text style={styles.toastText} numberOfLines={1}>
+            {toastMessage}
+          </Text>
+        </Animated.View>
+      ) : null}
+
       <View style={styles.content}>
         <SearchBar
           value={search}
@@ -536,5 +591,32 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: colors.border,
     marginVertical: 14,
+  },
+  toastContainer: {
+    position: 'absolute',
+    top: 10,
+    left: 20,
+    right: 20,
+    backgroundColor: '#10b981',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 8,
+    zIndex: 9999,
+  },
+  toastIcon: {
+    marginRight: 8,
+  },
+  toastText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

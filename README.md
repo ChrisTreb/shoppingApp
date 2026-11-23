@@ -81,6 +81,7 @@ Application mobile **React Native** développée avec **Expo SDK 58** (compatibl
 | **Framework & Outils** | Expo SDK `58.0.26` | Écosystème mobile, support Expo Go et bundling Hermes |
 | **Base de Données** | `expo-sqlite` `~58.0.18` | SQLite embarqué natif avec mode WAL activé |
 | **Navigation** | `@react-navigation/bottom-tabs` `^7.22.0` | Navigation par onglets inférieurs React Navigation v7 |
+| **Interface Système** | `expo-navigation-bar` | Contrôle immersif et masquage de la barre système Android |
 | **Système de Fichiers** | `expo-file-system` / `expo-sharing` | Manipulation de fichiers locaux et partage natif |
 | **Sélecteur de Fichiers**| `expo-document-picker` | Sélection de fichiers CSV pour l'importation |
 | **Icônes** | `@expo/vector-icons` (`Ionicons`) | Iconographie vectorielle fluide et légère |

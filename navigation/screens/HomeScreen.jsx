@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   FlatList,
@@ -11,6 +10,7 @@ import {
   Alert,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { dbService } from '../../database/functions/DatabaseConnect';
 import setImage from '../../lists/functions/GetProductImage';

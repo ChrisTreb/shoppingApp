@@ -2,6 +2,7 @@ import React from 'react';
 import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../variables/theme';
 
@@ -18,6 +19,9 @@ const overviewName = "Dashboard";
 const Tab = createBottomTabNavigator();
 
 function MainContainer() {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 10);
+
   return (
     <NavigationContainer>
       <StatusBar
@@ -39,13 +43,14 @@ function MainContainer() {
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.textSecondary,
           tabBarLabelStyle: {
-            paddingBottom: 6,
+            paddingBottom: 4,
             fontSize: 11,
             fontWeight: '600',
           },
           tabBarStyle: {
             paddingTop: 6,
-            height: 60,
+            paddingBottom: bottomInset,
+            height: 54 + bottomInset,
             borderTopColor: colors.border,
             backgroundColor: '#ffffff',
           },

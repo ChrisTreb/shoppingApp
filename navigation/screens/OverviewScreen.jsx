@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
-  SafeAreaView,
   Image,
   View,
   Text,
@@ -11,6 +10,7 @@ import {
   Modal,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { dbService } from '../../database/functions/DatabaseConnect';
 import { csvService } from '../../services/csvService';

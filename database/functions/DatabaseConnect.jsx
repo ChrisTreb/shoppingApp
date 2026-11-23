@@ -100,10 +100,20 @@ class WebStorageMock {
       return [...this.lists];
     }
     if (sql.includes("FROM products WHERE inCurrentList = 1")) {
-      return this.products.filter((p) => p.inCurrentList === 1);
+      return this.products
+        .filter((p) => p.inCurrentList === 1)
+        .sort(
+          (a, b) =>
+            (a.type || "").localeCompare(b.type || "", "fr", { sensitivity: "base" }) ||
+            (a.name || "").localeCompare(b.name || "", "fr", { sensitivity: "base" })
+        );
     }
     if (sql.includes("FROM products")) {
-      return [...this.products].sort((a, b) => a.type.localeCompare(b.type));
+      return [...this.products].sort(
+        (a, b) =>
+          (a.type || "").localeCompare(b.type || "", "fr", { sensitivity: "base" }) ||
+          (a.name || "").localeCompare(b.name || "", "fr", { sensitivity: "base" })
+      );
     }
     return [];
   }
@@ -124,25 +134,9 @@ class WebStorageMock {
 }
 
 let dbInstance = null;
+let isInitialized = false;
 
-export function getDatabase() {
-  if (!dbInstance) {
-    if (Platform.OS === "web") {
-      dbInstance = new WebStorageMock();
-    } else {
-      dbInstance = SQLite.openDatabaseSync("db.db");
-      try {
-        dbInstance.execSync("PRAGMA journal_mode = WAL;");
-      } catch (e) {
-        // WAL pragma safe to ignore
-      }
-    }
-  }
-  return dbInstance;
-}
-
-export function initDatabase() {
-  const db = getDatabase();
+function ensureTablesAndSeed(db) {
   const today = new Date().toISOString().slice(0, 10);
   try {
     db.execSync(`
@@ -193,24 +187,55 @@ export function initDatabase() {
   }
 }
 
+export function getDatabase() {
+  if (!dbInstance) {
+    if (Platform.OS === "web") {
+      dbInstance = new WebStorageMock();
+      isInitialized = true;
+    } else {
+      dbInstance = SQLite.openDatabaseSync("db.db");
+      try {
+        dbInstance.execSync("PRAGMA journal_mode = WAL;");
+      } catch (e) {
+        // WAL pragma safe to ignore
+      }
+    }
+  }
+
+  // Guarantee tables exist synchronously BEFORE any query is executed
+  if (!isInitialized && Platform.OS !== "web") {
+    isInitialized = true;
+    ensureTablesAndSeed(dbInstance);
+  }
+
+  return dbInstance;
+}
+
+export function initDatabase() {
+  const db = getDatabase();
+  if (Platform.OS !== "web") {
+    ensureTablesAndSeed(db);
+  }
+}
+
 // Database Service operations with parameterized, safe queries
 export const dbService = {
-  // Get all products sorted by type
+  // Get all products sorted by type then name
   getProducts() {
     const db = getDatabase();
     try {
-      return db.getAllSync("SELECT * FROM products ORDER BY type ASC, name ASC");
+      return db.getAllSync("SELECT * FROM products ORDER BY type COLLATE NOCASE ASC, name COLLATE NOCASE ASC");
     } catch (err) {
       console.error("dbService.getProducts error:", err);
       return [];
     }
   },
 
-  // Get products currently in the active list
+  // Get products currently in the active list sorted by type then name
   getCurrentListProducts() {
     const db = getDatabase();
     try {
-      return db.getAllSync("SELECT * FROM products WHERE inCurrentList = 1 ORDER BY type ASC, name ASC");
+      return db.getAllSync("SELECT * FROM products WHERE inCurrentList = 1 ORDER BY type COLLATE NOCASE ASC, name COLLATE NOCASE ASC");
     } catch (err) {
       console.error("dbService.getCurrentListProducts error:", err);
       return [];
@@ -313,6 +338,11 @@ export const dbService = {
         }
 
         productsArr.push(product);
+        productsArr.sort((a, b) => {
+          const typeComp = (a.type || "").localeCompare(b.type || "", "fr", { sensitivity: "base" });
+          if (typeComp !== 0) return typeComp;
+          return (a.name || "").localeCompare(b.name || "", "fr", { sensitivity: "base" });
+        });
 
         // Update list JSON and mark product inCurrentList = 1
         db.runSync("UPDATE productsLists SET products = ? WHERE currentList = 1", [JSON.stringify(productsArr)]);
@@ -436,7 +466,7 @@ export const dbService = {
     const db = getDatabase();
     try {
       db.runSync("DROP TABLE IF EXISTS products");
-      initDatabase();
+      ensureTablesAndSeed(db);
     } catch (err) {
       console.error("dbService.dropProductsTable error:", err);
       throw err;
@@ -451,7 +481,7 @@ export const dbService = {
         db.runSync("UPDATE products SET inCurrentList = 0 WHERE inCurrentList = 1");
         db.runSync("DROP TABLE IF EXISTS productsLists");
       });
-      initDatabase();
+      ensureTablesAndSeed(db);
     } catch (err) {
       console.error("dbService.dropListsTable error:", err);
       throw err;
