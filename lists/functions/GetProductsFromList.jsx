@@ -1,16 +1,22 @@
 /**
- * Récupère un tableau de produits depuis une liste déjà créée
- * @param {*} strProducts 
- * @returns [] arrProducts
+ * Parse products array safely from list representation
+ * @param {string|Array} strProducts
+ * @returns {Array} arrProducts
  */
-
 export default function getProductsFromList(strProducts) {
-    // Array d'objets produit
-    console.log("products = " + strProducts);
-    let arrProducts = [];
+  if (!strProducts) return [];
+  if (Array.isArray(strProducts)) return strProducts;
 
-    strProducts = "[" + strProducts + "]";
-    arrProducts = JSON.parse(strProducts);
-
-    return arrProducts;
+  try {
+    const trimmed = String(strProducts).trim();
+    if (!trimmed || trimmed === "[]") return [];
+    if (trimmed.startsWith("[")) {
+      return JSON.parse(trimmed);
+    }
+    // Backward compatibility with legacy comma-separated objects
+    return JSON.parse(`[${trimmed}]`);
+  } catch (err) {
+    console.warn("getProductsFromList parsing error:", err);
+    return [];
+  }
 }

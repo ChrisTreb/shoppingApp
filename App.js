@@ -1,10 +1,13 @@
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import MainContainer from './navigation/MainContainer';
+import { initDatabase } from './database/functions/DatabaseConnect';
 
 function App() {
-  return (
-    <MainContainer/>
-  );
+  useEffect(() => {
+    initDatabase();
+  }, []);
+
+  return <MainContainer />;
 }
 
 export default App;

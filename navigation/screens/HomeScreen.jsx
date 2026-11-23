@@ -1,498 +1,458 @@
-import * as React from 'react';
-import { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, Image, StyleSheet, Modal, Alert, StatusBar } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import database from '../../database/functions/DatabaseConnect';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import {
+  SafeAreaView,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Modal,
+  Alert,
+  StatusBar,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { dbService } from '../../database/functions/DatabaseConnect';
 import setImage from '../../lists/functions/GetProductImage';
+import { colors } from '../../variables/theme';
 
-const db = database;
+// Memoized item for the main shopping list
+const HomeProductItem = React.memo(({ item, onAddToCart }) => {
+  return (
+    <TouchableOpacity
+      onPress={() => onAddToCart(item)}
+      style={styles.item}
+      activeOpacity={0.7}
+    >
+      <Image style={styles.productImg} source={setImage(item.type)} />
+      <Text style={styles.title} numberOfLines={1}>
+        {item.name}
+      </Text>
+      <Ionicons
+        name="radio-button-off-outline"
+        size={22}
+        color={colors.textMuted}
+        style={styles.checkIcon}
+      />
+    </TouchableOpacity>
+  );
+});
+
+// Memoized item for the edit modal
+const EditProductItem = React.memo(({ item, onRemove }) => {
+  return (
+    <TouchableOpacity
+      onPress={() => onRemove(item)}
+      style={styles.itemEdit}
+      activeOpacity={0.7}
+    >
+      <Image style={styles.productImg} source={setImage(item.type)} />
+      <Text style={styles.title} numberOfLines={1}>
+        {item.name}
+      </Text>
+      <Ionicons
+        name="trash-outline"
+        size={22}
+        color={colors.danger}
+        style={styles.checkIcon}
+      />
+    </TouchableOpacity>
+  );
+});
 
 export default function HomeScreen({ navigation }) {
-
-  const [modalHomeVisible, setModalHomeVisible] = useState(true);
+  const [modalHomeVisible, setModalHomeVisible] = useState(false);
   const [modalListVisible, setModalListVisible] = useState(false);
-  var [list, setList] = useState({});
-  var [products, setProducts] = useState([]);
-  var [displayedProducts, setDisplayedProducts] = useState([]);
+  const [currentList, setCurrentList] = useState(null);
+  const [products, setProducts] = useState([]);
+
+  // Load current list info and products
+  const loadData = useCallback(() => {
+    try {
+      const activeList = dbService.getCurrentList();
+      setCurrentList(activeList);
+
+      if (activeList) {
+        const listProducts = dbService.getCurrentListProducts();
+        setProducts(listProducts);
+      } else {
+        setProducts([]);
+      }
+    } catch (err) {
+      console.error("HomeScreen loadData error:", err);
+    }
+  }, []);
 
   useEffect(() => {
-    // Reload list each time we load the page
-    const unsubscribe = navigation.addListener('focus', () => {
-      [getCurrentListData(), getCurrentListProducts()]
-    });
+    loadData();
+    const unsubscribe = navigation.addListener('focus', loadData);
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, loadData]);
 
-  // SELECT from productsLists table
-  const getCurrentListProducts = () => {
+  // Remove item from current list in database
+  const handleRemoveItem = useCallback((item) => {
+    try {
+      dbService.removeProductFromCurrentList(item.id);
+      loadData();
+    } catch (err) {
+      Alert.alert("Error", "Could not remove item from list");
+    }
+  }, [loadData]);
 
-    // Create table products if not exists
-    db.transaction(
-      tx => {
-        tx.executeSql(`CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name VARCHAR(50) NOT NULL,
-      type VARCHAR(50) NOT NULL,
-      inCurrentList INTEGER(1) DEFAULT 0,
-      lastOrder TIMESTAMP,
-      numOrdered INTEGER DEFAULT 0)`,
-          [], (trans, result) => {
-            console.log("table created products successfully !");
-          },
-          error => {
-            console.log("error on creating table products : " + error.message);
-          });
-      }
-    );
-
-    db.transaction(
-      tx => {
-        tx.executeSql(`SELECT * FROM products WHERE inCurrentList = 1 ORDER BY type DESC`, [], (trans, result) => {
-          var len = result.rows.length;
-          if (len > 0) {
-            products = result.rows._array;
-            console.log('Products in currentList = ' + JSON.stringify(result.rows._array));
-            setProducts(products);
-          } else {
-            console.log('Database empty... no products in currentList');
-            setProducts([]);
-            setDisplayedProducts([]);
-          }
-        });
-      }
-    );
-  }
-
-  const getCurrentListData = () => {
-
-    // Create table productsLists for lists storage if not exists
-    db.transaction(
-      tx => {
-        tx.executeSql(`CREATE TABLE IF NOT EXISTS productsLists (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        listName VARCHAR(50),
-        createdAt TIMESTAMP,
-        products VARCHAR(255),
-        currentList INTEGER(1) DEFAULT 0)`,
-          [], (trans, result) => {
-            console.log("table created successfully => " + JSON.stringify(result));
-          },
-          error => {
-            console.log("error on creating table productsLists : " + error.message);
-          });
-      }
-    );
-
-    db.transaction(
-      tx => {
-        tx.executeSql(`SELECT * FROM productsLists WHERE currentList = 1`, [], (trans, result) => {
-          var len = result.rows.length;
-          if (len > 0) {
-            list = result.rows._array[0];
-            console.log('CurrentList ' + list.listName + " = " + JSON.stringify(result.rows._array[0]));
-            setList(list);
-          } else {
-            console.log('CurrentList is empty... ');
-            setList({});
-            setProducts([]);
-            setDisplayedProducts([]);
-          }
-        });
-      }
-    );
-  }
-
-  // Remove item from current list
-  const removeItem = (item) => {
-    db.transaction(
-      tx => {
-        tx.executeSql(`UPDATE products SET inCurrentList = 0 WHERE id = ` + item.id,
-          [], (trans, result) => {
-            console.log("Removed from list - Updated product inCurrentList = 0 => " + item.name + "!");
-          },
-          error => {
-            console.log("error updating products : " + error.message);
-          });
-      }
-    );
-    getCurrentListProducts();
-  }
-
-  // Alert on product click => Add to cart, remove from current display screen
-  const addToCart = (item) =>
+  // Confirm remove from list in edit modal
+  const confirmRemoveItem = useCallback((item) => {
     Alert.alert(
-      "ADD TO CART",
-      "Remove this from display ? " + item.name,
+      "Remove item?",
+      `Delete "${item.name}" from your current list?`,
       [
+        { text: "Cancel", style: "cancel" },
         {
-          text: "No",
-          onPress: () => console.log("No, " + item.name),
-          style: "cancel"
+          text: "Remove",
+          style: "destructive",
+          onPress: () => handleRemoveItem(item),
         },
+      ],
+      { cancelable: true }
+    );
+  }, [handleRemoveItem]);
+
+  // Check item (mark as added to cart in this shopping session)
+  const handleAddToCart = useCallback((item) => {
+    Alert.alert(
+      "Add to Cart",
+      `Mark "${item.name}" as taken and hide it?`,
+      [
+        { text: "No", style: "cancel" },
         {
           text: "Yes",
-          onPress: () => checkItem(item)
-        }
-      ],
-      {
-        cancelable: false,
-      }
-    );
-
-  // Alert edit list => remove from currentList
-  const AlertRemoveItemFromList = (item) =>
-    Alert.alert(
-      "Remove this item ?",
-      "Do you want to delete from your list ? " + item.name,
-      [
-        {
-          text: "No",
-          onPress: () => console.log("No, " + item.name),
-          style: "cancel"
+          onPress: () => {
+            setProducts((prev) => prev.filter((p) => p.id !== item.id));
+          },
         },
-        {
-          text: "Yes, sure !",
-          onPress: () => removeItem(item)
-        }
       ],
-      {
-        cancelable: false,
-      }
+      { cancelable: true }
     );
+  }, []);
 
-  // Check item in list
-  const checkItem = (item) => {
-    if (item != "" || item != undefined) {
-      displayedProducts = products.filter((el) => el.id != item.id);
-      setDisplayedProducts(displayedProducts);
-      setProducts(displayedProducts);
-    } else {
-      setProducts(products);
-    }
-  }
+  const renderItem = useCallback(
+    ({ item }) => <HomeProductItem item={item} onAddToCart={handleAddToCart} />,
+    [handleAddToCart]
+  );
 
-  // Items displayed in home list
-  const Item = ({ item }) => {
-    if (item) {
-      return (
-        <TouchableOpacity onPress={() => addToCart(item)} style={styles.item}>
-          <Image style={styles.productImg} source={setImage(item.type)} />
-          <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
-        </TouchableOpacity >
-      )
-    }
-  };
+  const renderEditItem = useCallback(
+    ({ item }) => <EditProductItem item={item} onRemove={confirmRemoveItem} />,
+    [confirmRemoveItem]
+  );
 
-  const renderItem = ({ item }) => {
-    if (item) {
-      return (
-        <Item style={styles.title} item={item} />
-      )
-    }
-  };
+  const keyExtractor = useCallback((item) => item.id.toString(), []);
 
-  // Items displayed in modal editing list
-  const ModalItem = ({ item }) => {
-    if (item) {
-      return (
-        <TouchableOpacity onPress={() => AlertRemoveItemFromList(item)} style={styles.itemEdit}>
-          <Image style={styles.productImg} source={setImage(item.type)} />
-          <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
-        </TouchableOpacity >
-      )
-    }
-  };
-
-  const renderModalItem = ({ item }) => {
-    if (item) {
-      return (
-        <ModalItem style={styles.title} item={item} />
-      )
-    }
-  };
-
-  // CSS Styles
-  const styles = StyleSheet.create({
-    container: {
-      width: '90%',
-      flex: 1,
-      marginHorizontal: 16
-    },
-    listHeader: {
-      width: "100%",
-      position: "absolute",
-      flex: 1,
-      height: 60,
-      maxHeight: 60,
-      paddingVertical: 10,
-      justifyContent: "space-between",
-      alignContent: "center",
-      flexDirection: "row"
-    },
-    btnEdit: {
-    },
-    listHeaderText: {
-      fontSize: 14,
-      marginTop: 12,
-      marginLeft: 10,
-      fontWeight: "bold"
-    },
-    emptyListContainer: {
-      flex: 1,
-      width: "100%",
-      height: "20%",
-      justifyContent: "center",
-      alignItems: "center"
-    },
-    emptyListImage: {
-      maxWidth: 150,
-      maxHeight: 150,
-      marginBottom: 20
-    },
-    emptyListText: {
-      textAlign: "center",
-      fontSize: 20,
-      fontWeight: "bold",
-      paddingHorizontal: 50
-    },
-    flatlist: {
-      marginTop: 60
-    },
-    item: {
-      flex: 1,
-      alignItems: "center",
-      flexDirection: "row",
-      Height: 50,
-      fontSize: 16,
-      backgroundColor: "#fff",
-      padding: 10,
-      marginVertical: 5,
-      borderRadius: 5,
-      borderWidth: 1,
-      borderColor: "#D3D3D3",
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      shadowOpacity: 0.22,
-      shadowRadius: 2.22,
-      elevation: 3
-    },
-    itemEdit: {
-      flex: 1,
-      alignItems: "center",
-      flexDirection: "row",
-      Height: 50,
-      fontSize: 16,
-      backgroundColor: "#fff",
-      padding: 10,
-      marginVertical: 5,
-      borderRadius: 5,
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      shadowOpacity: 0.22,
-      shadowRadius: 2.22,
-      elevation: 3
-    },
-    title: {
-      maxWidth: "80%",
-      color: "#696969",
-      fontSize: 16
-    },
-    productImg: {
-      maxWidth: 40,
-      maxHeight: 40,
-      marginLeft: 10,
-      marginRight: 15,
-      borderRadius: 20
-    },
-    centeredView: {
-      height: '100%',
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center'
-    },
-    modalHomeView: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center'
-    },
-    modalHomeText: {
-      fontSize: 50,
-      fontWeight: 'bold',
-      textAlign: "center"
-    },
-    modalHomeSubText: {
-      paddingBottom: 50,
-      fontSize: 16,
-      textAlign: "center"
-    },
-    modalListView: {
-      display: 'flex',
-      alignItems: "center",
-      justifyContent: 'center',
-      height: "100%",
-      padding: 15,
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 2
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      elevation: 5
-    },
-    modalListText: {
-      marginTop: 30,
-      fontSize: 24,
-      fontWeight: 'bold',
-      textAlign: "center"
-    },
-    startButton: {
-      backgroundColor: "#1E90FF",
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: 90,
-      maxHeight: 90,
-      borderRadius: 45
-    },
-    startIcon: {
-      fontSize: 60,
-      marginLeft: 3,
-      color: '#fff'
-    },
-    btnCloseEdit: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#1E90FF',
-      width: 70,
-      height: 70,
-      position: 'absolute',
-      bottom: 20,
-      right: 20,
-      marginBottom: 20,
-      borderRadius: 35
-    },
-    closeBtnEditText: {
-      marginLeft: 3,
-      fontSize: 48,
-      color: '#fff'
-    },
-    flatlistEdit: {
-      maxWidth: "100%",
-      marginTop: 15
-    },
-    ioniconTitle: {
-      fontSize: 50
-    },
-    iconEdit: {
-      paddingTop: 3,
-      fontSize: 30
-    }
-  });
+  const hasItems = currentList && products.length > 0;
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar />
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+
+      {/* List Header */}
       <View style={styles.listHeader}>
-        {list.listName ?
-          <Text style={styles.listHeaderText}>{list.listName} - {list.createdAt}</Text>
-          :
-          <Text style={styles.listHeaderText}>No Active List</Text>
-        }
-        {list.listName ?
+        <View style={styles.headerInfo}>
+          <Text style={styles.listHeaderText} numberOfLines={1}>
+            {currentList?.listName || "No Active List"}
+          </Text>
+          {currentList?.createdAt ? (
+            <Text style={styles.listDateText}>Created on {currentList.createdAt}</Text>
+          ) : null}
+        </View>
+
+        {currentList ? (
           <TouchableOpacity
             style={styles.btnEdit}
-            onPress={() => {
-              setModalListVisible(!modalListVisible),
-                console.log("Opening edit modal !")
-            }}
+            onPress={() => setModalListVisible(true)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons style={styles.iconEdit} name='create' />
+            <Ionicons name="create-outline" size={26} color={colors.primary} />
           </TouchableOpacity>
-          :
-          null
-        }
+        ) : null}
       </View>
 
-      {/* 
-      If there's a list with product display list 
-      Else display cat with empty list message
-      */}
-      {
-        (Object.keys(list).length != 0) && (products != 0) ?
-          <FlatList style={styles.flatlist}
-            data={products}
-            renderItem={renderItem}
-            keyExtractor={(item) => item ? item.id : 0}
+      {/* Main List Content */}
+      {hasItems ? (
+        <FlatList
+          style={styles.flatlist}
+          contentContainerStyle={styles.flatlistContent}
+          data={products}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          initialNumToRender={15}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
+        />
+      ) : (
+        <View style={styles.emptyListContainer}>
+          <Image
+            style={styles.emptyListImage}
+            source={require('../../img/home/cat.png')}
+            resizeMode="contain"
           />
-          :
-          <View style={styles.emptyListContainer}>
-            <Image style={styles.emptyListImage} source={require('../../img/home/cat.png')} />
-            <Text style={styles.emptyListText}>Create a list first and add at least one product !</Text>
-          </View>
-      }
+          <Text style={styles.emptyListTitle}>Your list is empty</Text>
+          <Text style={styles.emptyListText}>
+            Select or create a list in Products and add items to get started!
+          </Text>
+        </View>
+      )}
 
-      {/* MODAL HOME START */}
-      <Modal style={styles.modalHome}
+      {/* Modal Welcome */}
+      <Modal
         animationType="fade"
         transparent={false}
         visible={modalHomeVisible}
-        onRequestClose={() => {
-          setModalHomeVisible(!modalHomeVisible);
-        }}
+        onRequestClose={() => setModalHomeVisible(false)}
       >
         <View style={styles.centeredView}>
           <View style={styles.modalHomeView}>
-            <Text style={styles.modalHomeText}><Ionicons style={styles.ioniconTitle} name="list-outline" />Listahan</Text>
-            <Text style={styles.modalHomeSubText}>My shopping mate</Text>
-            <TouchableOpacity style={styles.startButton}
+            <View style={styles.welcomeLogoRow}>
+              <Ionicons name="cart" size={48} color={colors.primary} />
+              <Text style={styles.modalHomeText}>Listahan</Text>
+            </View>
+            <Text style={styles.modalHomeSubText}>Your smart shopping companion</Text>
+            <TouchableOpacity
+              style={styles.startButton}
               activeOpacity={0.8}
-              onPress={() => setModalHomeVisible(!modalHomeVisible)}
+              onPress={() => setModalHomeVisible(false)}
             >
-              <Ionicons style={styles.startIcon} name='play-circle' />
+              <Ionicons name="arrow-forward" size={32} color="#ffffff" />
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-      {/* MODAL LIST EDITING */}
-      <Modal style={styles.modalList}
-        animationType="fade"
+      {/* Modal Edit List */}
+      <Modal
+        animationType="slide"
         transparent={false}
         visible={modalListVisible}
-        onRequestClose={() => {
-          setModalListVisible(!modalListVisible);
-        }}
+        onRequestClose={() => setModalListVisible(false)}
       >
-        <View>
-          <View style={styles.modalListView}>
-            <Text style={styles.modalListText}>List editing</Text>
-            <Text>Here you can delete items</Text>
-
-            <FlatList style={styles.flatlistEdit}
-              data={products}
-              renderItem={renderModalItem}
-              keyExtractor={(item) => item ? item.id : 0}
-            />
+        <SafeAreaView style={styles.modalSafeContainer}>
+          <View style={styles.modalHeaderBar}>
+            <View>
+              <Text style={styles.modalListText}>Edit List</Text>
+              <Text style={styles.modalSubText}>Tap an item to delete it from this list</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.closeHeaderBtn}
+              onPress={() => setModalListVisible(false)}
+            >
+              <Ionicons name="close" size={28} color={colors.text} />
+            </TouchableOpacity>
           </View>
-        </View>
 
-        <TouchableOpacity style={styles.btnCloseEdit}
-          activeOpacity={0.8}
-          onPress={() => setModalListVisible(!modalListVisible)}
-        >
-          <Ionicons style={styles.closeBtnEditText} name="close-circle" />
-        </TouchableOpacity>
-
+          <FlatList
+            style={styles.flatlistEdit}
+            contentContainerStyle={styles.flatlistContent}
+            data={products}
+            renderItem={renderEditItem}
+            keyExtractor={keyExtractor}
+            ListEmptyComponent={
+              <View style={styles.emptyModalContainer}>
+                <Text style={styles.emptyModalText}>No items remaining in this list.</Text>
+              </View>
+            }
+          />
+        </SafeAreaView>
       </Modal>
-
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  listHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  headerInfo: {
+    flex: 1,
+  },
+  listHeaderText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  listDateText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  btnEdit: {
+    padding: 6,
+    marginLeft: 12,
+  },
+  flatlist: {
+    flex: 1,
+  },
+  flatlistContent: {
+    padding: 16,
+    paddingBottom: 24,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2.5,
+    elevation: 2,
+  },
+  itemEdit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fed7d7',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2.5,
+    elevation: 2,
+  },
+  title: {
+    flex: 1,
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  productImg: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    marginRight: 14,
+  },
+  checkIcon: {
+    marginLeft: 8,
+  },
+  emptyListContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  emptyListImage: {
+    width: 140,
+    height: 140,
+    marginBottom: 20,
+    opacity: 0.85,
+  },
+  emptyListTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyListText: {
+    textAlign: 'center',
+    fontSize: 15,
+    color: colors.textSecondary,
+    lineHeight: 22,
+  },
+  centeredView: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalHomeView: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  welcomeLogoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  modalHomeText: {
+    fontSize: 38,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginLeft: 10,
+  },
+  modalHomeSubText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: 40,
+    textAlign: 'center',
+  },
+  startButton: {
+    backgroundColor: colors.primary,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  modalSafeContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  modalHeaderBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalListText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  modalSubText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  closeHeaderBtn: {
+    padding: 6,
+  },
+  flatlistEdit: {
+    flex: 1,
+  },
+  emptyModalContainer: {
+    paddingTop: 60,
+    alignItems: 'center',
+  },
+  emptyModalText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+  },
+});

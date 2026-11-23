@@ -1,491 +1,512 @@
-import * as React from 'react';
-import { useEffect, useState } from 'react';
-import { SafeAreaView, Image, View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Pressable, Button, Modal } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import database from '../../database/functions/DatabaseConnect';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import {
+  SafeAreaView,
+  Image,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Modal,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { dbService } from '../../database/functions/DatabaseConnect';
 import getProductsFromList from '../../lists/functions/GetProductsFromList';
 import setImage from '../../lists/functions/GetProductImage';
+import { colors } from '../../variables/theme';
 
-const db = database;
+// Memoized List Row
+const ListRow = React.memo(({ item, isCurrent, onSelect, onBrowse }) => {
+  const parsedProducts = useMemo(() => getProductsFromList(item.products), [item.products]);
+  const productCount = parsedProducts.length;
+
+  return (
+    <View style={[styles.item, isCurrent && styles.itemCurrent]}>
+      <TouchableOpacity
+        style={styles.itemMainTouch}
+        onPress={() => onSelect(item)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.listTextContainer}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title} numberOfLines={1}>
+              {item.listName}
+            </Text>
+            {isCurrent && (
+              <View style={styles.activeBadge}>
+                <Text style={styles.activeBadgeText}>ACTIVE</Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.subtitle}>
+            {item.createdAt} • {productCount} {productCount > 1 ? "items" : "item"}
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.btnBrowseList}
+        onPress={() => onBrowse(item, parsedProducts)}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Ionicons
+          name={productCount > 0 ? "open-outline" : "eye-off-outline"}
+          size={20}
+          color="#ffffff"
+        />
+      </TouchableOpacity>
+    </View>
+  );
+});
+
+// Memoized Modal Product Row
+const ModalProductRow = React.memo(({ item }) => {
+  return (
+    <View style={styles.modalProductItem}>
+      <Image style={styles.productImg} source={setImage(item.type)} />
+      <View style={styles.modalProductTextContainer}>
+        <Text style={styles.modalProductTitle} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={styles.modalProductCategory} numberOfLines={1}>
+          {item.type}
+        </Text>
+      </View>
+    </View>
+  );
+});
 
 export default function OverviewScreen({ navigation }) {
-
-  var [lists, setLists] = useState([]);
-  var [products, setProducts] = useState([]);
-  var [listName, setListName] = useState("");
+  const [lists, setLists] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedList, setSelectedList] = useState(null);
+  const [modalProducts, setModalProducts] = useState([]);
+
+  // Load lists from DB
+  const loadLists = useCallback(() => {
+    try {
+      const allLists = dbService.getAllLists();
+      setLists(allLists);
+    } catch (err) {
+      console.error("OverviewScreen loadLists error:", err);
+    }
+  }, []);
 
   useEffect(() => {
-    // Reload list each time we load the page
-    const unsubscribe = navigation.addListener('focus', () => {
-      getLists();
-    });
+    loadLists();
+    const unsubscribe = navigation.addListener('focus', loadLists);
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, loadLists]);
 
-  // Get lists in table productsLists
-  const getLists = () => {
-
-    db.transaction(
-      tx => {
-        tx.executeSql(`SELECT * FROM productsLists ORDER BY id`, [], (trans, result) => {
-          var len = result.rows.length;
-          if (len > 0) {
-            lists = result.rows._array;
-            console.log('Lists in DB = ' + JSON.stringify(result.rows._array));
-            setLists(lists);
-          } else {
-            console.log('No list in DB ! ');
-            dropTableLists(); // Drop the table => To be sure no list is in cache somewhere...
-            setLists([]);
-          }
-        });
-      }
-    );
-  }
-
-  // Drop table products
-  const dropTableProducts = () => {
-    // DEV - Drop table
-    db.transaction(
-      tx => {
-        tx.executeSql(`DROP TABLE IF EXISTS products`, [], (trans, result) => {
-          console.log("table products dropped successfully => " + JSON.stringify(result));
-        },
-          error => {
-            console.log("error on dropping table products : " + error.message);
-          });
-      }
-    );
-  }
-
-  // Drop table lists
-  const dropTableLists = () => {
-    // Update all products inCurrentList before creating new list
-    resetCurrentlistProducts();
-
-    db.transaction(
-      tx => {
-        tx.executeSql(`DROP TABLE IF EXISTS productsLists`, [], (trans, result) => {
-          console.log("table dropped successfully => " + JSON.stringify(result));
-        },
-          error => {
-            console.log("error on dropping table productsList : " + error.message);
-          });
-      }
-    );
-
-    setLists([]);
-  }
-
-  // Reset products in currentList
-  const resetCurrentlistProducts = () => {
-    db.transaction(
-      tx => {
-        tx.executeSql(`UPDATE products SET inCurrentList = 0 WHERE inCurrentList = 1`,
-          [], (trans, result) => {
-            console.log("Products updated in DB set inCurrentList = 0 !");
-          },
-          error => {
-            console.log("error updating products : " + error.message);
-          });
-      }
-    );
-  }
-
-  // Switch list
-  const switchList = (list) => {
-    console.log("Switching to list id : " + list.id);
-
-    // Reset all products in DB
-    resetCurrentlistProducts();
-    console.log("No product in list !");
-
-    db.transaction(
-      tx => {
-        tx.executeSql(`UPDATE productsLists SET currentList = 0 WHERE currentList = 1`,
-          [], (trans, result) => {
-            console.log("Update OK currentList = 0 where was 1 !");
-          },
-          error => {
-            console.log("error updating productsLists : " + error.message);
-          });
-      }
-    );
-
-    db.transaction(
-      tx => {
-        tx.executeSql(`UPDATE productsLists SET currentList = 1 WHERE id = ` + list.id,
-          [], (trans, result) => {
-            console.log("Switched to list id " + list.id + "!");
-          },
-          error => {
-            console.log("error updating productsLists : " + error.message);
-          });
-      }
-    );
-
-    if (list.products !== null) {
-      let arrProducts = getProductsFromList(list.products);
-      console.log(arrProducts);
-
-      // For each products in new list set product inCurrentList = 1
-      for (let i = 0; i < arrProducts.length; i++) {
-        // Update each product inCurrentList = 1
-        db.transaction(
-          tx => {
-            tx.executeSql(`UPDATE products SET inCurrentList = 1 WHERE id = ` + arrProducts[i].id,
-              [], (trans, result) => {
-                console.log("Updated product  inCurrentList = 1" + arrProducts[i].id + " - " + arrProducts[i].name + "!");
-              },
-              error => {
-                console.log("error updating products : " + error.message);
-              });
-          }
-        );
-      }
+  // Switch to selected list
+  const handleSwitchList = useCallback((list) => {
+    try {
+      dbService.switchList(list.id, list.products);
+      loadLists();
+      Alert.alert("List Activated", `"${list.listName}" is now your active list.`);
+    } catch (err) {
+      Alert.alert("Error", "Could not activate this list.");
     }
-  }
+  }, [loadLists]);
 
-  // Set Product when calling modal
-  const setListProducts = (list) => {
-    listName = list.listName;
-    setListName(listName);
-    products = getProductsFromList(list.products);
-    console.log("Products in list : " + JSON.stringify(products));
-    setProducts(products);
-  }
+  // Confirm set as current list
+  const confirmSetCurrentList = useCallback((item) => {
+    if (item.currentList === 1) {
+      Alert.alert("Already Active", `"${item.listName}" is already your active list.`);
+      return;
+    }
 
-  // Alert Drop products table
+    Alert.alert(
+      "Activate List",
+      `Set "${item.listName}" as your active shopping list?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Activate",
+          onPress: () => handleSwitchList(item),
+        },
+      ],
+      { cancelable: true }
+    );
+  }, [handleSwitchList]);
+
+  // Browse list products in modal
+  const handleBrowseList = useCallback((item, productsArr) => {
+    if (!productsArr || productsArr.length === 0) {
+      Alert.alert("Empty List", `"${item.listName}" does not contain any products yet.`);
+      return;
+    }
+    setSelectedList(item);
+    setModalProducts(productsArr);
+    setModalVisible(true);
+  }, []);
+
+  // Drop products table confirmation
   const alertDropProductsTable = () => {
     Alert.alert(
-      "CAUTION !",
-      "You're going to delete all your products in database",
+      "CAUTION!",
+      "Are you sure you want to delete all products from your catalog? This cannot be undone.",
       [
+        { text: "Cancel", style: "cancel" },
         {
-          text: "Cancel",
-          onPress: () => console.log("Keep products touched "),
-          style: "cancel"
+          text: "Delete All Products",
+          style: "destructive",
+          onPress: () => {
+            try {
+              dbService.dropProductsTable();
+              loadLists();
+              Alert.alert("Catalog Cleared", "All products have been deleted.");
+            } catch (err) {
+              Alert.alert("Error", "Failed to reset products table.");
+            }
+          },
         },
-        {
-          text: "Yes, delete all",
-          onPress: () => dropTableProducts(),
-        }
       ],
-      {
-        cancelable: false,
-      }
+      { cancelable: true }
     );
-  }
+  };
 
-  // Alert Drop products table
+  // Drop lists table confirmation
   const alertDropListsTable = () => {
     Alert.alert(
-      "CAUTION !",
-      "You're going to delete all your lists in database",
+      "CAUTION!",
+      "Are you sure you want to delete all saved shopping lists? This cannot be undone.",
       [
+        { text: "Cancel", style: "cancel" },
         {
-          text: "Cancel",
-          onPress: () => console.log("Keep lists touched "),
-          style: "cancel"
+          text: "Delete All Lists",
+          style: "destructive",
+          onPress: () => {
+            try {
+              dbService.dropListsTable();
+              loadLists();
+              Alert.alert("Lists Cleared", "All lists have been deleted.");
+            } catch (err) {
+              Alert.alert("Error", "Failed to reset lists table.");
+            }
+          },
         },
-        {
-          text: "Yes, delete all",
-          onPress: () => dropTableLists(),
-        }
       ],
-      {
-        cancelable: false,
-      }
+      { cancelable: true }
     );
-  }
-
-  // Alert set this list as current list
-  const alertSetCurrentList = (item) => {
-    Alert.alert(
-      "Set \"" + item.listName + "\" as current list ?",
-      "Do you agree ?",
-      [
-        {
-          text: "Cancel",
-          onPress: () => console.log("Keep this list touched "),
-          style: "cancel"
-        },
-        {
-          text: "Yes, use this",
-          onPress: () => switchList(item),
-        }
-      ],
-      {
-        cancelable: false,
-      }
-    );
-  }
-
-  // Alert when list is empty
-  const alertEmptyList = (item) => {
-    Alert.alert(
-      "This list \"" + item.listName + "\" is empty",
-      "Nothing here...",
-      [
-        {
-          text: "Close",
-          onPress: () => console.log("Empty list alert closed"),
-          style: "cancel"
-        }
-      ],
-      {
-        cancelable: true,
-      }
-    );
-  }
-
-  // List Items
-  const Item = ({ item }) => {
-    if (item) {
-      return (
-        <TouchableOpacity style={styles.item} >
-          <Text onPress={() => alertSetCurrentList(item)} style={styles.title} activeOpacity={0.8}>{item.listName} - {item.createdAt}</Text>
-          {
-            item.products ?
-              <TouchableOpacity
-                style={styles.btnBrowseList}
-                onPress={() => { setModalVisible(!modalVisible), setListProducts(item) }}
-              >
-                <Ionicons style={styles.icon} name='open-outline' />
-              </TouchableOpacity>
-              :
-              <TouchableOpacity
-                style={styles.btnBrowseList}
-                onPress={() => alertEmptyList(item)}
-              >
-                <Ionicons style={styles.icon} name='eye-off-outline' />
-              </TouchableOpacity>
-          }
-
-        </TouchableOpacity >
-      )
-    }
   };
 
-  const renderItem = ({ item }) => {
-    if (item) {
-      return (
-        <Item style={styles.title} item={item} />
-      )
-    }
-  };
+  const renderItem = useCallback(
+    ({ item }) => (
+      <ListRow
+        item={item}
+        isCurrent={item.currentList === 1}
+        onSelect={confirmSetCurrentList}
+        onBrowse={handleBrowseList}
+      />
+    ),
+    [confirmSetCurrentList, handleBrowseList]
+  );
 
-  // Products in list render list
-  const ListItem = ({ item }) => {
-    if (item) {
-      return (
-        <TouchableOpacity style={styles.item}>
-          <Image style={styles.productImg} source={setImage(item.type)} />
-          <Text style={styles.title} activeOpacity={0.8}>{item.name}</Text>
-        </TouchableOpacity >
-      )
-    }
-  };
+  const renderModalProduct = useCallback(
+    ({ item }) => <ModalProductRow item={item} />,
+    []
+  );
 
-  const renderListItem = ({ item }) => {
-    if (item) {
-      return (
-        <ListItem style={styles.title} item={item} />
-      )
-    }
-  };
+  const keyExtractor = useCallback((item) => item.id.toString(), []);
+  const modalKeyExtractor = useCallback((item, index) => (item?.id ? item.id.toString() : index.toString()), []);
 
-
-  // CSS
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'center',
-      width: '90%',
-      flex: 1,
-      marginHorizontal: 16,
-    },
-    listContainer: {
-      marginBottom: 15,
-      maxHeight: 500
-    },
-    listContainerText: {
-      minHeight: 20,
-      fontSize: 20,
-      marginVertical: 10
-    },
-    item: {
-      maxWidth: '100%',
-      flex: 1,
-      alignItems: "center",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      Height: 50,
-      fontSize: 16,
-      backgroundColor: "#fff",
-      paddingVertical: 15,
-      paddingHorizontal: 10,
-      marginVertical: 5,
-      borderRadius: 5,
-      borderWidth: 1,
-      borderColor: "#D3D3D3",
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      shadowOpacity: 0.22,
-      shadowRadius: 2.22,
-      elevation: 3
-    },
-    title: {
-      width: "80%",
-      color: "#696969",
-      fontSize: 14
-    },
-    productImg: {
-      maxWidth: 40,
-      maxHeight: 40,
-      marginLeft: 10,
-      marginRight: 15,
-      borderRadius: 20
-    },
-    buttonContainer: {
-      width: '100%',
-      maxHeight: 60,
-      paddingHorizontal: 10,
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: "center",
-      justifyContent: "center"
-    },
-    button: {
-      height: 40,
-      backgroundColor: "#ff6961",
-      width: "50%",
-      padding: 10,
-      margin: 10,
-      borderRadius: 5
-    },
-    buttonText: {
-      textAlign: "center",
-      fontSize: 14,
-      color: '#fff'
-    },
-    btnBrowseList: {
-      borderRadius: 25,
-      padding: 10,
-      backgroundColor: '#1E90FF'
-    },
-    modalList: {
-      height: '100%',
-      flex: 1,
-      alignItems: "center"
-    },
-    modalListView: {
-      height: "100%",
-      padding: 10,
-      alignItems: "center"
-    },
-    modalListText: {
-      marginVertical: 30,
-      fontSize: 24,
-      fontWeight: 'bold',
-      textAlign: "center"
-    },
-    btnCloseEdit: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#1E90FF',
-      width: 70,
-      height: 70,
-      position: 'absolute',
-      bottom: 20,
-      right: 20,
-      marginBottom: 20,
-      borderRadius: 35
-    },
-    closeBtnEditText: {
-      marginLeft: 3,
-      color: '#fff',
-      fontSize: 48
-    },
-    modalProductsList: {
-      fontSize: 20,
-      marginTop: 30,
-    },
-    icon: {
-      fontSize: 20,
-      color: '#fff'
-    },
-    ionicon: {
-      fontSize: 20
-    },
-    iconWarning: {
-      fontSize: 20,
-      color: "#ff6961"
-    },
-    warningText: {
-      color: "#ff6961"
-    }
-  });
-
-  // View
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.listContainer}>
-        <Text style={styles.listContainerText}><Ionicons style={styles.ionicon} name="server-outline" /> Lists storage</Text>
-        {
-          lists ?
-            <FlatList
-              data={lists}
-              renderItem={renderItem}
-              keyExtractor={(item) => item ? item.id : 0}
-            />
-            : <Text>No records found in database</Text>
-        }
-      </View>
-
-      <Text style={styles.warningText}><Ionicons style={styles.iconWarning} name="warning-outline" /> Caution, these actions are irreversible !</Text>
-      <View style={styles.buttonContainer}>
-        <Pressable style={styles.button} onPress={() => alertDropProductsTable()} >
-          <Text style={styles.buttonText}>Drop products</Text>
-        </Pressable>
-        <Pressable style={styles.button} onPress={() => alertDropListsTable()} >
-          <Text style={styles.buttonText}>Drop lists</Text>
-        </Pressable>
-      </View>
-
-      {/* MODAL BROWSE LIST */}
-      <Modal style={styles.modalList}
-        animationType="fade"
-        transparent={false}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.scrollView}>
-          <View style={styles.modalListView}>
-            <Text style={styles.modalListText}>{listName}</Text>
-            <FlatList
-              data={products}
-              renderItem={renderListItem}
-              keyExtractor={(item) => item ? item.id : 0}
-            />
-          </View>
+      <View style={styles.content}>
+        <View style={styles.sectionHeader}>
+          <Ionicons name="folder-outline" size={22} color={colors.primary} />
+          <Text style={styles.sectionTitle}>Saved Lists</Text>
         </View>
 
-        <TouchableOpacity style={styles.btnCloseEdit}
-          activeOpacity={0.8}
-          onPress={() => setModalVisible(!modalVisible)}
-        >
-          <Ionicons style={styles.closeBtnEditText} name="close-circle" />
-        </TouchableOpacity>
-      </Modal>
+        <FlatList
+          data={lists}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="documents-outline" size={50} color={colors.textMuted} />
+              <Text style={styles.emptyTitle}>No saved lists found</Text>
+              <Text style={styles.emptySubText}>
+                Go to the Products tab and tap the + button to create a list.
+              </Text>
+            </View>
+          }
+        />
 
+        {/* Danger zone actions */}
+        <View style={styles.dangerZone}>
+          <View style={styles.warningRow}>
+            <Ionicons name="warning-outline" size={18} color={colors.danger} />
+            <Text style={styles.warningText}>Danger Zone (Irreversible)</Text>
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.dangerBtn}
+              onPress={alertDropProductsTable}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="trash-outline" size={16} color="#ffffff" style={styles.btnIcon} />
+              <Text style={styles.buttonText}>Clear Products</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.dangerBtn}
+              onPress={alertDropListsTable}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="trash-outline" size={16} color="#ffffff" style={styles.btnIcon} />
+              <Text style={styles.buttonText}>Clear Lists</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
+      {/* Modal Browse List Content */}
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalListText} numberOfLines={1}>
+                {selectedList?.listName}
+              </Text>
+              <Text style={styles.modalSubtitle}>
+                {modalProducts.length} {modalProducts.length > 1 ? "products" : "product"}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={() => setModalVisible(false)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="close" size={28} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={modalProducts}
+            renderItem={renderModalProduct}
+            keyExtractor={modalKeyExtractor}
+            contentContainerStyle={styles.modalListContent}
+          />
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginLeft: 8,
+  },
+  listContent: {
+    paddingBottom: 20,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.card,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2.5,
+    elevation: 2,
+  },
+  itemCurrent: {
+    borderColor: colors.primary,
+    borderWidth: 1.5,
+    backgroundColor: '#f0f7ff',
+  },
+  itemMainTouch: {
+    flex: 1,
+  },
+  listTextContainer: {
+    flex: 1,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    maxWidth: '75%',
+  },
+  activeBadge: {
+    backgroundColor: colors.primary,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 8,
+  },
+  activeBadgeText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  subtitle: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  btnBrowseList: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+  },
+  emptyContainer: {
+    paddingTop: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  dangerZone: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: 14,
+    paddingBottom: 16,
+  },
+  warningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  warningText: {
+    color: colors.danger,
+    fontSize: 13,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  dangerBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 42,
+    backgroundColor: colors.danger,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  btnIcon: {
+    marginRight: 6,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalTitleContainer: {
+    flex: 1,
+  },
+  modalListText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  closeBtn: {
+    padding: 6,
+  },
+  modalListContent: {
+    padding: 16,
+  },
+  modalProductItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  productImg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 12,
+  },
+  modalProductTextContainer: {
+    flex: 1,
+  },
+  modalProductTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  modalProductCategory: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+});
