@@ -1,13 +1,32 @@
 import * as SQLite from "expo-sqlite";
 import { Platform } from "react-native";
+import { DEFAULT_PRODUCTS } from "../seedData";
 
 // Web fallback mock storage in memory
 class WebStorageMock {
   constructor() {
-    this.products = [];
-    this.lists = [];
-    this.nextProductId = 1;
-    this.nextListId = 1;
+    const today = new Date().toISOString().slice(0, 10);
+    this.products = DEFAULT_PRODUCTS.map((p, index) => ({
+      id: index + 1,
+      name: p.name,
+      type: p.type,
+      inCurrentList: p.inCurrentList,
+      lastOrder: today,
+      numOrdered: 0,
+    }));
+    this.nextProductId = this.products.length + 1;
+
+    const activeItems = this.products.filter((p) => p.inCurrentList === 1);
+    this.lists = [
+      {
+        id: 1,
+        listName: "Mes premières courses",
+        createdAt: today,
+        products: JSON.stringify(activeItems),
+        currentList: 1,
+      },
+    ];
+    this.nextListId = 2;
   }
 
   execSync(sql) {}
@@ -15,13 +34,13 @@ class WebStorageMock {
   runSync(sql, params = []) {
     if (sql.includes("INSERT INTO productsLists")) {
       const id = this.nextListId++;
-      this.lists.forEach(l => l.currentList = 0);
+      this.lists.forEach((l) => (l.currentList = 0));
       this.lists.push({
         id,
         listName: params[0],
         createdAt: params[1],
-        products: "[]",
-        currentList: params[2] || 1
+        products: params[2] || "[]",
+        currentList: params[3] ?? 1,
       });
       return { changes: 1, lastInsertRowId: id };
     }
@@ -31,34 +50,38 @@ class WebStorageMock {
         id,
         name: params[0],
         type: params[1],
-        inCurrentList: 0,
         lastOrder: params[2],
-        numOrdered: 0
+        inCurrentList: params[3] ?? 0,
+        numOrdered: 0,
       });
       return { changes: 1, lastInsertRowId: id };
     }
     if (sql.includes("UPDATE productsLists SET currentList = 0")) {
-      this.lists.forEach(l => l.currentList = 0);
+      this.lists.forEach((l) => (l.currentList = 0));
       return { changes: this.lists.length };
     }
     if (sql.includes("UPDATE productsLists SET currentList = 1 WHERE id = ?")) {
-      this.lists.forEach(l => l.currentList = l.id === params[0] ? 1 : 0);
+      this.lists.forEach((l) => (l.currentList = l.id === params[0] ? 1 : 0));
       return { changes: 1 };
     }
     if (sql.includes("UPDATE products SET inCurrentList = 0")) {
       if (params.length > 0) {
-        this.products.forEach(p => { if (p.id === params[0]) p.inCurrentList = 0; });
+        this.products.forEach((p) => {
+          if (p.id === params[0]) p.inCurrentList = 0;
+        });
       } else {
-        this.products.forEach(p => p.inCurrentList = 0);
+        this.products.forEach((p) => (p.inCurrentList = 0));
       }
       return { changes: this.products.length };
     }
     if (sql.includes("UPDATE products SET inCurrentList = 1 WHERE id = ?")) {
-      this.products.forEach(p => { if (p.id === params[0]) p.inCurrentList = 1; });
+      this.products.forEach((p) => {
+        if (p.id === params[0]) p.inCurrentList = 1;
+      });
       return { changes: 1 };
     }
     if (sql.includes("DELETE FROM products WHERE id = ?")) {
-      this.products = this.products.filter(p => p.id !== params[0]);
+      this.products = this.products.filter((p) => p.id !== params[0]);
       return { changes: 1 };
     }
     if (sql.includes("DROP TABLE IF EXISTS productsLists")) {
@@ -77,7 +100,7 @@ class WebStorageMock {
       return [...this.lists];
     }
     if (sql.includes("FROM products WHERE inCurrentList = 1")) {
-      return this.products.filter(p => p.inCurrentList === 1);
+      return this.products.filter((p) => p.inCurrentList === 1);
     }
     if (sql.includes("FROM products")) {
       return [...this.products].sort((a, b) => a.type.localeCompare(b.type));
@@ -86,8 +109,11 @@ class WebStorageMock {
   }
 
   getFirstSync(sql, params = []) {
+    if (sql.includes("COUNT(*) as count FROM products")) {
+      return { count: this.products.length };
+    }
     if (sql.includes("FROM productsLists WHERE currentList = 1")) {
-      return this.lists.find(l => l.currentList === 1) || null;
+      return this.lists.find((l) => l.currentList === 1) || null;
     }
     return null;
   }
@@ -108,7 +134,7 @@ export function getDatabase() {
       try {
         dbInstance.execSync("PRAGMA journal_mode = WAL;");
       } catch (e) {
-        // WAL pragma might fail in certain environments, safe to ignore
+        // WAL pragma safe to ignore
       }
     }
   }
@@ -117,6 +143,7 @@ export function getDatabase() {
 
 export function initDatabase() {
   const db = getDatabase();
+  const today = new Date().toISOString().slice(0, 10);
   try {
     db.execSync(`
       CREATE TABLE IF NOT EXISTS products (
@@ -135,6 +162,32 @@ export function initDatabase() {
         currentList INTEGER DEFAULT 0
       );
     `);
+
+    // Check if products table is empty to seed initial supermarket catalog
+    const countRow = db.getFirstSync("SELECT COUNT(*) as count FROM products");
+    const count = countRow ? countRow.count : 0;
+
+    if (count === 0) {
+      db.withTransactionSync(() => {
+        // Seed default supermarket catalog
+        DEFAULT_PRODUCTS.forEach((p) => {
+          db.runSync(
+            "INSERT INTO products (name, type, lastOrder, inCurrentList, numOrdered) VALUES (?, ?, ?, ?, 0)",
+            [p.name, p.type, today, p.inCurrentList]
+          );
+        });
+
+        // Create an initial active shopping list with starter items
+        const initialListProducts = db.getAllSync(
+          "SELECT * FROM products WHERE inCurrentList = 1 ORDER BY type ASC, name ASC"
+        );
+
+        db.runSync(
+          "INSERT INTO productsLists (listName, createdAt, products, currentList) VALUES (?, ?, ?, 1)",
+          ["Mes premières courses", today, JSON.stringify(initialListProducts)]
+        );
+      });
+    }
   } catch (err) {
     console.error("Database initialization error:", err);
   }
@@ -254,7 +307,7 @@ export const dbService = {
           }
         }
 
-        const alreadyExists = productsArr.some(p => p.id === product.id);
+        const alreadyExists = productsArr.some((p) => p.id === product.id);
         if (alreadyExists) {
           return { alreadyInList: true };
         }
@@ -285,7 +338,7 @@ export const dbService = {
           try {
             const raw = currentList.products.trim();
             const productsArr = raw.startsWith("[") ? JSON.parse(raw) : JSON.parse(`[${raw}]`);
-            const filtered = productsArr.filter(p => p.id !== productId);
+            const filtered = productsArr.filter((p) => p.id !== productId);
             db.runSync("UPDATE productsLists SET products = ? WHERE currentList = 1", [JSON.stringify(filtered)]);
           } catch (e) {
             // ignore JSON error
@@ -324,7 +377,7 @@ export const dbService = {
         }
 
         if (productsArr.length > 0) {
-          const ids = productsArr.map(p => p.id).filter(id => id !== undefined && id !== null);
+          const ids = productsArr.map((p) => p.id).filter((id) => id !== undefined && id !== null);
           if (ids.length > 0) {
             const placeholders = ids.map(() => "?").join(",");
             db.runSync(`UPDATE products SET inCurrentList = 1 WHERE id IN (${placeholders})`, ids);
@@ -337,7 +390,7 @@ export const dbService = {
     }
   },
 
-  // Drop products table and reinit
+  // Drop products table and reinit (re-seeds catalog)
   dropProductsTable() {
     const db = getDatabase();
     try {
@@ -362,7 +415,7 @@ export const dbService = {
       console.error("dbService.dropListsTable error:", err);
       throw err;
     }
-  }
+  },
 };
 
 export default getDatabase;
