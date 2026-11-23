@@ -390,6 +390,47 @@ export const dbService = {
     }
   },
 
+  // Batch import products from parsed CSV
+  importProducts(items) {
+    const db = getDatabase();
+    const today = new Date().toISOString().slice(0, 10);
+    let inserted = 0;
+    let updated = 0;
+
+    try {
+      db.withTransactionSync(() => {
+        items.forEach((item) => {
+          if (!item.name || !item.name.trim()) return;
+          const name = item.name.trim();
+          const type = (item.type && item.type.trim()) || "Autres";
+
+          const existing = db.getFirstSync(
+            "SELECT id FROM products WHERE LOWER(name) = LOWER(?) LIMIT 1",
+            [name]
+          );
+
+          if (existing) {
+            db.runSync(
+              "UPDATE products SET type = ? WHERE id = ?",
+              [type, existing.id]
+            );
+            updated++;
+          } else {
+            db.runSync(
+              "INSERT INTO products (name, type, lastOrder, inCurrentList, numOrdered) VALUES (?, ?, ?, 0, 0)",
+              [name, type, today]
+            );
+            inserted++;
+          }
+        });
+      });
+      return { inserted, updated };
+    } catch (err) {
+      console.error("dbService.importProducts error:", err);
+      throw err;
+    }
+  },
+
   // Drop products table and reinit (re-seeds catalog)
   dropProductsTable() {
     const db = getDatabase();

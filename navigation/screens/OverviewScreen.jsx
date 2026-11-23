@@ -9,9 +9,11 @@ import {
   StyleSheet,
   Alert,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { dbService } from '../../database/functions/DatabaseConnect';
+import { csvService } from '../../services/csvService';
 import getProductsFromList from '../../lists/functions/GetProductsFromList';
 import setImage from '../../lists/functions/GetProductImage';
 import { colors } from '../../variables/theme';
@@ -82,6 +84,7 @@ export default function OverviewScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedList, setSelectedList] = useState(null);
   const [modalProducts, setModalProducts] = useState([]);
+  const [isProcessingCSV, setIsProcessingCSV] = useState(false);
 
   // Load lists from DB
   const loadLists = useCallback(() => {
@@ -142,6 +145,65 @@ export default function OverviewScreen({ navigation }) {
     setModalVisible(true);
   }, []);
 
+  // CSV Export: Catalog
+  const handleExportProducts = async () => {
+    try {
+      setIsProcessingCSV(true);
+      const count = await csvService.exportProducts();
+      Alert.alert("Export Successful", `Exported ${count} products to CSV.`);
+    } catch (err) {
+      if (err.message === 'NO_PRODUCTS') {
+        Alert.alert("Empty Catalog", "There are no products in the catalog to export.");
+      } else {
+        Alert.alert("Export Error", "Failed to export catalog to CSV.");
+      }
+    } finally {
+      setIsProcessingCSV(false);
+    }
+  };
+
+  // CSV Export: Current Active List
+  const handleExportCurrentList = async () => {
+    try {
+      setIsProcessingCSV(true);
+      const count = await csvService.exportCurrentList();
+      Alert.alert("Export Successful", `Exported ${count} items from active list to CSV.`);
+    } catch (err) {
+      if (err.message === 'EMPTY_LIST') {
+        Alert.alert("No Items", "The active list has no items to export.");
+      } else {
+        Alert.alert("Export Error", "Failed to export active list to CSV.");
+      }
+    } finally {
+      setIsProcessingCSV(false);
+    }
+  };
+
+  // CSV Import: Products
+  const handleImportProducts = async () => {
+    try {
+      setIsProcessingCSV(true);
+      const res = await csvService.importProducts();
+      if (!res) return; // cancelled
+
+      loadLists();
+      Alert.alert(
+        "Import Successful",
+        `Imported ${res.total} products (${res.inserted} new added, ${res.updated} updated).`
+      );
+    } catch (err) {
+      if (err.message === 'EMPTY_FILE') {
+        Alert.alert("Invalid File", "The selected CSV file is empty.");
+      } else if (err.message === 'NO_VALID_DATA') {
+        Alert.alert("Import Error", "Could not find valid product rows in the selected CSV file.");
+      } else {
+        Alert.alert("Import Error", "Failed to import products from CSV.");
+      }
+    } finally {
+      setIsProcessingCSV(false);
+    }
+  };
+
   // Drop products table confirmation
   const alertDropProductsTable = () => {
     Alert.alert(
@@ -156,7 +218,7 @@ export default function OverviewScreen({ navigation }) {
             try {
               dbService.dropProductsTable();
               loadLists();
-              Alert.alert("Catalog Cleared", "All products have been deleted.");
+              Alert.alert("Catalog Cleared", "All products have been deleted and reset.");
             } catch (err) {
               Alert.alert("Error", "Failed to reset products table.");
             }
@@ -235,6 +297,48 @@ export default function OverviewScreen({ navigation }) {
             </View>
           }
         />
+
+        {/* CSV Import/Export Section */}
+        <View style={styles.csvSection}>
+          <View style={styles.sectionHeaderSmall}>
+            <Ionicons name="swap-horizontal-outline" size={18} color={colors.primary} />
+            <Text style={styles.sectionSubtitle}>CSV Import & Export</Text>
+            {isProcessingCSV && (
+              <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
+            )}
+          </View>
+          <View style={styles.csvButtonContainer}>
+            <TouchableOpacity
+              style={styles.csvBtn}
+              onPress={handleExportProducts}
+              disabled={isProcessingCSV}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="download-outline" size={15} color="#ffffff" style={styles.btnIcon} />
+              <Text style={styles.csvBtnText}>Export Catalog</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.csvBtn}
+              onPress={handleExportCurrentList}
+              disabled={isProcessingCSV}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="share-outline" size={15} color="#ffffff" style={styles.btnIcon} />
+              <Text style={styles.csvBtnText}>Export List</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.csvBtn, styles.csvImportBtn]}
+              onPress={handleImportProducts}
+              disabled={isProcessingCSV}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="cloud-upload-outline" size={15} color="#ffffff" style={styles.btnIcon} />
+              <Text style={styles.csvBtnText}>Import CSV</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* Danger zone actions */}
         <View style={styles.dangerZone}>
@@ -323,8 +427,22 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginLeft: 8,
   },
+  sectionHeaderSmall: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginLeft: 6,
+  },
+  loader: {
+    marginLeft: 8,
+  },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
   item: {
     flexDirection: 'row',
@@ -391,7 +509,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   emptyContainer: {
-    paddingTop: 60,
+    paddingTop: 40,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
@@ -408,43 +526,70 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
   },
+  csvSection: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: 12,
+    paddingBottom: 10,
+  },
+  csvButtonContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  csvBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 38,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+  },
+  csvImportBtn: {
+    backgroundColor: '#0ea5e9',
+  },
+  csvBtnText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   dangerZone: {
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    paddingTop: 14,
-    paddingBottom: 16,
+    paddingTop: 10,
+    paddingBottom: 14,
   },
   warningRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   warningText: {
     color: colors.danger,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     marginLeft: 6,
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   dangerBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 42,
+    height: 38,
     backgroundColor: colors.danger,
     borderRadius: 8,
   },
   buttonText: {
     color: '#ffffff',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
   },
   btnIcon: {
-    marginRight: 6,
+    marginRight: 5,
   },
   modalContainer: {
     flex: 1,
