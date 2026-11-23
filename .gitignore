@@ -18,6 +18,3 @@ Readme.md
 
 # macOS
 .DS_Store
-package-lock.json
-package.json
-yarn.lock

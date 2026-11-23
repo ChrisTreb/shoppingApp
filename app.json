@@ -1,6 +1,5 @@
 {
   "expo": {
-    "owner": "soysauce",
     "name": "shoppingapp",
     "slug": "shoppingapp",
     "version": "1.0.0",
@@ -30,11 +29,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "b0f8b11e-8d3a-46be-b99f-466703fe4efb"
-      }
     },
     "plugins": [
       "expo-asset",
