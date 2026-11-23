@@ -3,7 +3,7 @@
 > **Votre compagnon intelligent de listes de courses sur mobile.**  
 > Site officiel : [https://christreb.github.io/Listahan-website/](https://christreb.github.io/Listahan-website/)
 
-Application mobile **React Native** développée avec **Expo SDK 52**, utilisant une base de données locale **SQLite** embarquée pour un fonctionnement 100 % hors-ligne, fluide et sécurisé.
+Application mobile **React Native** développée avec **Expo SDK 58** (compatible **Expo Go**), utilisant une base de données locale **SQLite** embarquée pour un fonctionnement 100 % hors-ligne, fluide et sécurisé.
 
 ---
 
@@ -76,11 +76,11 @@ Application mobile **React Native** développée avec **Expo SDK 52**, utilisant
 
 | Composant | Technologie / Version | Rôle |
 | :--- | :--- | :--- |
-| **Runtime Mobile** | React Native `0.76.9` | Moteur applicatif natif multiplateforme |
-| **UI Framework** | React `18.3.1` | Rendu déclaratif par composants fonctionnels et Hooks |
-| **Framework & Outils** | Expo SDK `52.0.49` | Écosystème mobile, bundling Hermes et modules natifs |
-| **Base de Données** | `expo-sqlite` `15.1.4` | SQLite embarqué natif avec mode WAL activé |
-| **Navigation** | `@react-navigation/bottom-tabs` `6.6.1` | Navigation par onglets inférieurs |
+| **Runtime Mobile** | React Native `0.88.1` | Moteur applicatif natif multiplateforme |
+| **UI Framework** | React `19.3.0` | Rendu déclaratif par composants fonctionnels et Hooks |
+| **Framework & Outils** | Expo SDK `58.0.26` | Écosystème mobile, support Expo Go et bundling Hermes |
+| **Base de Données** | `expo-sqlite` `~58.0.18` | SQLite embarqué natif avec mode WAL activé |
+| **Navigation** | `@react-navigation/bottom-tabs` `^7.22.0` | Navigation par onglets inférieurs React Navigation v7 |
 | **Système de Fichiers** | `expo-file-system` / `expo-sharing` | Manipulation de fichiers locaux et partage natif |
 | **Sélecteur de Fichiers**| `expo-document-picker` | Sélection de fichiers CSV pour l'importation |
 | **Icônes** | `@expo/vector-icons` (`Ionicons`) | Iconographie vectorielle fluide et légère |
