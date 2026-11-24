@@ -201,3 +201,7 @@ Vous pouvez ensuite appuyer sur `a` dans le terminal pour ouvrir sur un émulate
 * `npm run android` : Compile et exécute directement l'application sur un terminal/émulateur Android via Expo CLI.
 * `npm run ios` : Lance le build sur simulateur iOS (nécessite macOS et Xcode).
 * `npm run web` : Démarre l'application dans un navigateur web avec le mock SQLite en mémoire.
+* `npx expo export --platform android` : Exporte l'application pour Android.
+* `npx expo prebuild --platform android` : Pré-compile l'application pour Android.
+* `npx expo run:android` : Lance l'application sur un terminal/émulateur Android.
+* `eas build --platform android --profile preview` : Build APK avec EAS
